@@ -184,6 +184,29 @@ body {
   line-height: 1.6;
 }
 
+/* Inline validation error banner — document theme */
+.form-error-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding: 14px 18px;
+  background-color: #fdf5f5;
+  border: 1.5px solid #7a1f2e;
+  border-left: 5px solid #7a1f2e;
+  border-radius: 2px;
+  color: #7a1f2e;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.form-error-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
 /* Presets */
 .preset-btn {
   margin: 4px;
