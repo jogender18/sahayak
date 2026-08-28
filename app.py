@@ -34,17 +34,17 @@ def get_base_url():
          (e.g. the /pdf/<id> route called directly from localhost).
       4. host_url — last resort (localhost).
     """
-    # 1. Explicit env override (Render / Railway / permanent deploy)
-    env_url = os.environ.get('PUBLIC_BASE_URL')
-    if env_url:
-        return env_url.rstrip('/')
-
-    # 2. Live tunnel headers — Cloudflare injects these on every proxied request.
-    #    These are always current, even after a tunnel restart with a new subdomain.
+    # 1. Live tunnel / reverse proxy headers (Render, Cloudflare, etc.)
+    #    These always match the exact domain used to access the site.
     forwarded_proto = request.headers.get('X-Forwarded-Proto')
     forwarded_host  = request.headers.get('X-Forwarded-Host')
     if forwarded_proto and forwarded_host:
         return f"{forwarded_proto}://{forwarded_host}"
+
+    # 2. Explicit env override (Render / Railway / permanent deploy fallback)
+    env_url = os.environ.get('PUBLIC_BASE_URL')
+    if env_url:
+        return env_url.rstrip('/')
 
     # 3. public_url.txt — written by tunnel_manager.py on startup.
     #    Used when the PDF download route is hit locally (no Cloudflare header),
