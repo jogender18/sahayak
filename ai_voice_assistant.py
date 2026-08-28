@@ -265,19 +265,44 @@ def _fallback_nlp(user_message, history, current_state, lang):
         if worker_cand not in skip_words and not s.get('worker_name'):
             s['worker_name'] = worker_cand
 
-    # "worker name is X" / "kaargar ka naam X" → worker_name
+    # ── worker name is X / kaargar ka naam X → worker_name
     wn_m = re.search(r'(?:worker(?:\'s)? name is|kaargar ka naam|मजदूर का नाम|కార్మికుడి పేరు)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)', msg, re.IGNORECASE)
     if wn_m and not s.get('worker_name'):
         s['worker_name'] = wn_m.group(1).strip().title()
 
-    # "owner name is X" / "malik ka naam X" → owner_name
+    # ── owner name is X / malik ka naam X → owner_name
     on_m = re.search(r'(?:owner(?:\'s)? name is|employer(?:\'s)? name is|malik ka naam|मालिक का नाम|యజమాని పేరు)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)', msg, re.IGNORECASE)
     if on_m and not s.get('owner_name'):
         s['owner_name'] = on_m.group(1).strip().title()
 
-
+    # ── Active Missing Field Direct-Answer Fallback Heuristic ──
+    # If the user gives a short response (1-3 words) and we still haven't filled the
+    # active missing field, assign the response directly to it.
     req_fields = ['owner_name', 'worker_name', 'work_description', 'wage_amount']
+    prev_missing = [f for f in req_fields if not current_state.get(f)]
+    
+    if prev_missing and len(msg.split()) <= 3:
+        active_field = prev_missing[0]
+        # Only assign if the active field wasn't successfully extracted by standard rules above
+        if not s.get(active_field):
+            if active_field in ('owner_name', 'worker_name'):
+                # Exclude basic conversational noise
+                noise = {'hello', 'hi', 'yes', 'no', 'okay', 'ok', 'haan', 'हां', 'అవును'}
+                if low not in noise:
+                    s[active_field] = msg.strip().title()
+            elif active_field == 'work_description':
+                s[active_field] = msg.strip().capitalize()
+            elif active_field == 'wage_amount':
+                # If they say "thousand" or "eight hundred", we can clean it up
+                num_only = re.sub(r'\D', '', low)
+                if num_only:
+                    s[active_field] = num_only
+                else:
+                    # Let them write custom text or ignore
+                    pass
+
     missing = [f for f in req_fields if not s.get(f)]
+
 
     replies = {
         'owner_name': {
