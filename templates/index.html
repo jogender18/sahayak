@@ -12,16 +12,16 @@
   </div>
 
   <!-- Quick Fill Helpers & Conversational Voice Mode Button -->
-  <div style="margin-bottom: 20px; padding: 16px; background: #f1f5f9; border: 2px solid #cbd5e1; border-radius: 8px; font-size: 15px; display: flex; flex-direction: column; gap: 12px;">
+  <div class="quick-fill-panel">
     <div>
-      <strong style="color: #0f172a; display: block; margin-bottom: 6px;">{{ t.quick_fill }}</strong>
+      <strong class="quick-fill-title">{{ t.quick_fill }}</strong>
       <button type="button" onclick="fillSample('mason')" class="preset-btn">{{ t.preset_mason }}</button>
       <button type="button" onclick="fillSample('painting')" class="preset-btn">{{ t.preset_paint }}</button>
       <button type="button" onclick="fillSample('carpentry')" class="preset-btn">{{ t.preset_carpenter }}</button>
     </div>
-    <div style="border-top: 1px solid #cbd5e1; padding-top: 12px; margin-top: 4px;">
-      <button type="button" id="start-voice-mode-btn" class="btn btn-primary" style="background: #1e3a8a; border-color: #1e3a8a; font-weight: 700; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 17px; padding: 12px;">
-        <span>🎙️ {{ t.btn_voice_mode }}</span>
+    <div class="quick-fill-voice-section">
+      <button type="button" id="start-voice-mode-btn" class="btn btn-voice-trigger">
+        <span>{{ t.btn_voice_mode }}</span>
       </button>
     </div>
   </div>
