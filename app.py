@@ -6,6 +6,7 @@ from flask import Flask, render_template, request, redirect, url_for, send_file,
 from database import init_db, create_agreement, get_agreement, list_recent_agreements
 from pdf_generator import generate_agreement_pdf
 from translations import TRANSLATIONS, get_text
+from ai_voice_assistant import process_conversation_turn
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'sahayak-wage-secret-key-2026'
@@ -214,6 +215,56 @@ def api_debug():
         "base_url": get_base_url(),
         "env_public_base_url": os.environ.get("PUBLIC_BASE_URL", "")
     })
+
+
+
+@app.route('/api/voice-assistant/converse', methods=['POST'])
+def voice_assistant_converse():
+    """
+    Conversational AI voice assistant endpoint.
+    Accepts a user speech transcript and conversation history,
+    returns AI reply + extracted agreement fields.
+    Supports ChatGPT (OpenAI), Gemini, and heuristic fallback.
+    """
+    try:
+        data = request.get_json(force=True)
+        user_message = (data.get('message') or '').strip()
+        conversation_history = data.get('history') or []
+        current_state = data.get('current_state') or {}
+        lang = data.get('lang', 'en')
+
+        if not user_message:
+            return jsonify({'error': 'No message provided'}), 400
+
+        # Validate lang
+        if lang not in ('en', 'hi', 'te'):
+            lang = 'en'
+
+        result = process_conversation_turn(
+            user_message=user_message,
+            conversation_history=conversation_history,
+            current_state=current_state,
+            lang=lang
+        )
+
+        return jsonify({
+            'success': True,
+            'extracted_fields': result.get('extracted_fields', {}),
+            'reply': result.get('reply', ''),
+            'is_complete': result.get('is_complete', False),
+            'missing_fields': result.get('missing_fields', [])
+        })
+
+    except Exception as e:
+        print(f"[Voice Assistant] Error: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'reply': 'Sorry, I had trouble processing that. Please try again.',
+            'extracted_fields': {},
+            'is_complete': False,
+            'missing_fields': ['owner_name', 'worker_name', 'work_description', 'wage_amount']
+        }), 500
 
 
 if __name__ == '__main__':

@@ -616,11 +616,9 @@
 
     // Launch overlay
     startBtn.addEventListener('click', () => {
-      currentQuestions = VOICE_QUESTIONS[currentLang] || VOICE_QUESTIONS.en;
-      questionIndex = 0;
       overlay.style.display = 'flex';
       document.body.style.overflow = 'hidden'; 
-      askQuestion();
+      startAIConversation();
     });
 
     // Exit Voice Mode
@@ -957,83 +955,192 @@
     }
 
     // Speech listener
-    function startListening(q) {
-      setOrbState('listening');
-      activeRecognition = new SpeechRecognition();
-      activeRecognition.lang = activeLocale.speech;
-      activeRecognition.interimResults = true;
-      activeRecognition.continuous = false;
-      activeRecognition.maxAlternatives = 1;
+    // ─── AI Conversational Voice Engine ──────────────────────────────────────
+    // Replaces old sequential question flow with AI-powered open conversation.
+    // Calls /api/voice-assistant/converse on each turn.
 
-      activeRecognition.onresult = (event) => {
-        let interimText = '';
-        let finalText = '';
+    let aiConvHistory = [];      // [ {role: 'user'|'assistant', content: '...'} ]
+    let aiCurrentState = {};     // Currently extracted field map
+
+    // Display current progress on overlay UI
+    function updateProgressUI(fields) {
+      const total = 12;
+      const filled = Object.keys(fields).filter(k => fields[k] && fields[k].trim()).length;
+      const pct = Math.round((filled / total) * 100);
+      qTitle.textContent = `${currentLang === 'hi' ? 'प्रगति' : (currentLang === 'te' ? 'పురోగతి' : 'Progress')}: ${filled}/${total} ${currentLang === 'hi' ? 'क्षेत्र' : (currentLang === 'te' ? 'ఫీల్డ్లు' : 'fields')} (${pct}%)`;
+    }
+
+    // Auto-fill all extracted fields into the hidden form inputs
+    function populateFormFromAI(fields) {
+      const fieldMap = {
+        owner_name: 'owner_name', owner_phone: 'owner_phone',
+        worker_name: 'worker_name', worker_phone: 'worker_phone',
+        work_description: 'work_description', work_location: 'work_location',
+        start_date: 'start_date', duration: 'duration',
+        wage_amount: 'wage_amount', wage_unit: 'wage_unit',
+        payment_schedule: 'payment_schedule', late_penalty: 'late_penalty'
+      };
+      for (const [key, id] of Object.entries(fieldMap)) {
+        if (fields[key]) {
+          const el = document.getElementById(id);
+          if (el) {
+            el.value = fields[key];
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+          }
+        }
+      }
+    }
+
+    // Start AI conversation session
+    function startAIConversation() {
+      aiConvHistory = [];
+      aiCurrentState = {};
+      stopVoiceActivity();
+      setOrbState('speaking');
+
+      // Read form pre-fill to seed state
+      const preFillIds = ['owner_name','owner_phone','worker_name','worker_phone','work_description','work_location','start_date','duration','wage_amount','wage_unit','payment_schedule','late_penalty'];
+      preFillIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el && el.value.trim()) aiCurrentState[id] = el.value.trim();
+      });
+
+      const greet = {
+        en: 'Hello! I am Sahayak, your voice agreement assistant. You can tell me everything about the job — the names, type of work, wages, and location — all at once, or one by one. How can I help you today?',
+        hi: 'नमस्ते! मैं सहायक हूँ। आप एक ही बार में काम का पूरा विवरण बता सकते हैं — जैसे नाम, काम का प्रकार, मजदूरी और स्थान। आज क्या काम का अनुबंध बनाना है?',
+        te: 'నమస్కారం! నేను సహాయక్. మీరు పని వివరాలు — పేర్లు, పని రకం, వేతనం, ప్రదేశం — ఒకేసారి చెప్పవచ్చు. ఈ రోజు ఏ పని ఒప్పందం చేయాలి?'
+      };
+      const greetMsg = greet[currentLang] || greet.en;
+
+      qText.textContent = greetMsg;
+      transcriptPreview.textContent = '';
+      updateProgressUI(aiCurrentState);
+
+      speakText(greetMsg, () => {
+        startConversationalListening();
+      });
+    }
+
+    // Process one spoken turn through the AI backend
+    function processAITurn(userTranscript) {
+      stopVoiceActivity();
+      setOrbState('processing');
+      transcriptPreview.textContent = `"${userTranscript}"`;
+      qText.textContent = currentLang === 'hi' ? 'सोच रहा हूँ...' : (currentLang === 'te' ? 'ప్రాసెస్ చేస్తోంది...' : 'Thinking...');
+
+      // Add user message to history
+      aiConvHistory.push({ role: 'user', content: userTranscript });
+
+      fetch('/api/voice-assistant/converse', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: userTranscript,
+          history: aiConvHistory.slice(-10),
+          current_state: aiCurrentState,
+          lang: currentLang
+        })
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (!data.success && data.error) {
+          console.warn('[AI Voice] Backend error:', data.error);
+        }
+
+        // Merge new extracted fields
+        if (data.extracted_fields) {
+          Object.assign(aiCurrentState, data.extracted_fields);
+          populateFormFromAI(aiCurrentState);
+          updateProgressUI(aiCurrentState);
+        }
+
+        const reply = data.reply || 'Got it. Please continue.';
+        aiConvHistory.push({ role: 'assistant', content: reply });
+
+        qText.textContent = reply;
+        transcriptPreview.textContent = '';
+        setOrbState('speaking');
+
+        if (data.is_complete) {
+          // All critical fields collected — speak completion and go to review
+          speakText(reply, () => {
+            setTimeout(() => {
+              exitVoiceMode();
+              showReviewScreen();
+            }, 800);
+          });
+        } else {
+          // Keep conversation going
+          speakText(reply, () => {
+            startConversationalListening();
+          });
+        }
+      })
+      .catch(err => {
+        console.error('[AI Voice] Fetch error:', err);
+        const errMsg = currentLang === 'hi' ? 'माफ़ करें, कुछ समस्या हुई। कृपया दोबारा बोलें।' : (currentLang === 'te' ? 'క్షమించండి, సమస్య వచ్చింది. మళ్ళీ చెప్పండి.' : 'Sorry, there was an issue. Please speak again.');
+        qText.textContent = errMsg;
+        setOrbState('speaking');
+        speakText(errMsg, () => { startConversationalListening(); });
+      });
+    }
+
+    // Start listening for one user speech turn
+    function startConversationalListening() {
+      if (!SpeechRecognition) return;
+      setOrbState('listening');
+      const rec = new SpeechRecognition();
+      activeRecognition = rec;
+      rec.lang = (langLocales[currentLang] || langLocales.en).speech;
+      rec.interimResults = true;
+      rec.continuous = false;
+      rec.maxAlternatives = 1;
+
+      let hasFinal = false;
+
+      rec.onresult = (event) => {
+        let interim = '', final = '';
         for (let i = event.resultIndex; i < event.results.length; i++) {
           const res = event.results[i];
-          if (res.isFinal) finalText += res[0].transcript;
-          else             interimText += res[0].transcript;
+          if (res.isFinal) final += res[0].transcript;
+          else interim += res[0].transcript;
         }
-        transcriptPreview.textContent = interimText || finalText;
-
-        if (finalText) {
-          stopVoiceActivity();
-          setOrbState('processing');
-          
-          const targetInput = document.getElementById(q.targetId);
-          if (targetInput) {
-            let val = finalText.trim();
-            if (q.mode === 'number') {
-              const parsedNum = parseSpokenNumber(val);
-              if (parsedNum) val = parsedNum;
-              else val = val.replace(/[^0-9.]/g, '');
-            } else if (q.mode === 'phone') {
-              val = val.replace(/[^+\d\s]/g, '').trim();
-            } else if (q.mode === 'date') {
-              val = parseSpokenDate(val);
-            } else if (q.mode === 'select') {
-              const matchedVal = matchDropdownOption(val, q);
-              if (matchedVal) {
-                val = matchedVal;
-              } else {
-                val = targetInput.value;
-              }
-            }
-            targetInput.value = val;
-            targetInput.dispatchEvent(new Event('input', { bubbles: true }));
-          }
-
-          transcriptPreview.textContent = `✓ Recorded: ${finalText}`;
-          nextStepTimeout = setTimeout(() => {
-            questionIndex++;
-            askQuestion();
-          }, 1500);
+        transcriptPreview.textContent = interim || final;
+        if (final && !hasFinal) {
+          hasFinal = true;
+          activeRecognition = null;
+          processAITurn(final.trim());
         }
       };
 
-      activeRecognition.onerror = (event) => {
-        console.warn('SpeechRecognition error:', event.error);
+      rec.onerror = (event) => {
+        console.warn('[Voice] Error:', event.error);
         if (event.error === 'no-speech') {
-          // On mobile silence, do not restart TTS loop; keep listening or wait
-          if (orb.classList.contains('listening') && activeRecognition) {
-            try { activeRecognition.start(); } catch(e) {}
+          // Restart listening if still in listening state
+          if (!hasFinal && overlay.style.display !== 'none') {
+            try { rec.start(); } catch(e) {}
           }
         } else if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
-          transcriptPreview.textContent = "⚠ Mic permission needed. Please allow microphone in browser.";
+          transcriptPreview.textContent = '⚠ Mic permission needed. Please allow microphone.';
           setOrbState('speaking');
         }
       };
 
-      activeRecognition.onend = () => {
-        if (orb.classList.contains('listening') && activeRecognition) {
-          try { activeRecognition.start(); } catch(e) {}
+      rec.onend = () => {
+        if (!hasFinal && overlay.style.display !== 'none' && orb.classList.contains('listening')) {
+          try { rec.start(); } catch(e) {}
         }
       };
 
-      try {
-        activeRecognition.start();
-      } catch(e) {
-        console.warn('Speech recognition start failed:', e);
-      }
+      try { rec.start(); } catch(e) { console.warn('Speech start error:', e); }
+    }
+
+    // Legacy stub — kept for skip/end button compatibility
+    function askQuestion() {
+      startAIConversation();
+    }
+    function startListening(q) {
+      startConversationalListening();
     }
 
     // Controls and End Call / Skip / Mute Listeners
@@ -1053,11 +1160,10 @@
       }
     });
 
-    // Skip question
+    // Skip — in AI mode, just start listening again
     skipBtn.addEventListener('click', () => {
       stopVoiceActivity();
-      questionIndex++;
-      askQuestion();
+      startConversationalListening();
     });
 
     // End Call (X) button - routes to review screen immediately
