@@ -1,0 +1,18 @@
+﻿services:
+  - type: web
+    name: sahayak
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+    envVars:
+      - key: PUBLIC_BASE_URL
+        value: https://sahayak.onrender.com
+      - key: PYTHON_VERSION
+        value: "3.11"
+
+databases:
+  - name: sahayak-postgres
+    plan: free
+    databaseName: sahayak
+    user: sahayak

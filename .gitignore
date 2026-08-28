@@ -1,17 +1,35 @@
+# Python
 .venv/
 __pycache__/
 *.pyc
 *.pyo
+.pytest_cache/
+
+# Database (local SQLite only — production uses PostgreSQL on Render)
 *.db
-sahayak.db
+
+# Local tunnel / dev tools
 public_url.txt
 cloudflared.exe
-sample_wage_agreement.pdf
-sample_pdf_page_*.png
+
+# Generated artifacts (not source code)
+*.pdf
+fresh_*.png
 screenshot_*.png
-capture_screenshots.py
-generate_sample_pdf.py
-tunnel_manager.py
-git/
+voice_*.png
+sample_*.png
+voice_form*.png
+voice_crop*.png
+
+# Deploy helpers
 sahayak_deploy.zip
 create_deploy_zip.py
+generate_sample_pdf.py
+generate_fresh_test.py
+capture_screenshots.py
+capture_voice_assistant.py
+screenshot_crops.py
+screenshot_voice_form.py
+
+# Local Windows git binary (not needed in repo)
+git/
