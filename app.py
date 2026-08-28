@@ -14,28 +14,44 @@ app.config['SECRET_KEY'] = 'sahayak-wage-secret-key-2026'
 init_db()
 
 def get_base_url():
-    # Check environment variable
+    """
+    Returns the public base URL for QR codes and verification links.
+
+    Priority order (highest → lowest):
+      1. PUBLIC_BASE_URL env var  — set this on Render/Railway/Vercel for a permanent URL.
+      2. X-Forwarded-Proto/Host headers — always reflect the *currently active* tunnel
+         URL that Cloudflare injects on every request. This means a restarted tunnel
+         with a new URL is used immediately, with no stale-file risk.
+      3. public_url.txt — fallback for PDF downloads triggered without a tunnel header
+         (e.g. the /pdf/<id> route called directly from localhost).
+      4. host_url — last resort (localhost).
+    """
+    # 1. Explicit env override (Render / Railway / permanent deploy)
     env_url = os.environ.get('PUBLIC_BASE_URL')
     if env_url:
         return env_url.rstrip('/')
-    
-    # Check public_url.txt
+
+    # 2. Live tunnel headers — Cloudflare injects these on every proxied request.
+    #    These are always current, even after a tunnel restart with a new subdomain.
+    forwarded_proto = request.headers.get('X-Forwarded-Proto')
+    forwarded_host  = request.headers.get('X-Forwarded-Host')
+    if forwarded_proto and forwarded_host:
+        return f"{forwarded_proto}://{forwarded_host}"
+
+    # 3. public_url.txt — written by tunnel_manager.py on startup.
+    #    Used when the PDF download route is hit locally (no Cloudflare header),
+    #    but the link/QR should still point at the public tunnel.
     url_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "public_url.txt")
     if os.path.exists(url_file):
         try:
             with open(url_file, "r") as f:
                 saved_url = f.read().strip()
-                if saved_url.startswith("http"):
-                    return saved_url.rstrip('/')
+            if saved_url.startswith("http"):
+                return saved_url.rstrip('/')
         except Exception:
             pass
 
-    # Check reverse-proxy / tunnel headers if request is incoming from internet
-    forwarded_proto = request.headers.get('X-Forwarded-Proto')
-    forwarded_host = request.headers.get('X-Forwarded-Host')
-    if forwarded_proto and forwarded_host:
-        return f"{forwarded_proto}://{forwarded_host}"
-
+    # 4. Fallback: whatever host Flask sees (localhost in dev)
     return request.host_url.rstrip('/')
 
 def get_current_lang():
