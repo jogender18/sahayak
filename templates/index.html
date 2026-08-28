@@ -18,20 +18,33 @@
     {{ t.why_text }}
   </div>
 
-  <!-- Quick Fill Helpers & Conversational Voice Mode Button -->
-  <div class="quick-fill-panel">
-    <div>
-      <strong class="quick-fill-title">{{ t.quick_fill }}</strong>
-      <button type="button" onclick="fillSample('mason')" class="preset-btn">{{ t.preset_mason }}</button>
-      <button type="button" onclick="fillSample('painting')" class="preset-btn">{{ t.preset_paint }}</button>
-      <button type="button" onclick="fillSample('carpentry')" class="preset-btn">{{ t.preset_carpenter }}</button>
+  <!-- Primary Action Hero: Fill Form with Voice Assistant -->
+  <div class="voice-hero-card">
+    <div class="voice-hero-text">
+      <div class="voice-hero-badge">⚡ FAST & HANDS-FREE</div>
+      <h2 class="voice-hero-heading">{{ t.btn_voice_mode }}</h2>
+      <p class="voice-hero-sub">Speak your answers in Hindi, Telugu, or English. The assistant fills the entire contract automatically.</p>
     </div>
-    <div class="quick-fill-voice-section">
-      <button type="button" id="start-voice-mode-btn" class="btn btn-voice-trigger">
-        <span>{{ t.btn_voice_mode }}</span>
-      </button>
-    </div>
+    <button type="button" id="start-voice-mode-btn" class="btn btn-voice-hero" aria-label="{{ t.btn_voice_mode }}">
+      <span>{{ t.btn_voice_mode }}</span>
+    </button>
   </div>
+
+  <!-- Collapsible Developer / Quick Test Presets Drawer -->
+  <details class="dev-test-drawer">
+    <summary class="dev-test-summary">
+      <span class="drawer-title">⚙️ {{ t.quick_fill }} (Demo / Quick Presets)</span>
+      <span class="drawer-chevron">▼</span>
+    </summary>
+    <div class="dev-test-body">
+      <p class="dev-test-info">Tap any preset to auto-fill sample data for instant demonstration:</p>
+      <div class="preset-buttons-wrap">
+        <button type="button" onclick="fillSample('mason')" class="preset-btn">🏗️ {{ t.preset_mason }}</button>
+        <button type="button" onclick="fillSample('painting')" class="preset-btn">🎨 {{ t.preset_paint }}</button>
+        <button type="button" onclick="fillSample('carpentry')" class="preset-btn">🪚 {{ t.preset_carpenter }}</button>
+      </div>
+    </div>
+  </details>
 
   <!-- Conversational Full-Screen voice assistant mode -->
   <div id="voice-overlay" class="voice-overlay" {% if request.args.get('mock_voice_state') %}style="display: flex;"{% endif %}>

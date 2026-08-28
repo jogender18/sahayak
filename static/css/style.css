@@ -99,25 +99,32 @@ body {
   align-items: center;
   background: transparent;
   border: 1.5px solid #7a1f2e;
-  border-radius: 2px;
-  padding: 3px 6px;
-  gap: 4px;
+  border-radius: 3px;
+  padding: 4px 6px;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 
 .lang-icon {
-  font-size: 16px;
+  font-size: 18px;
   margin-right: 2px;
+  margin-left: 2px;
 }
 
 .lang-btn {
   color: #7a1f2e;
   text-decoration: none;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 400;
-  padding: 5px 9px;
+  min-height: 44px;
+  padding: 8px 14px;
   border-radius: 2px;
   transition: all 0.15s ease;
   font-family: 'Georgia', serif;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: manipulation;
 }
 
 .lang-btn:hover {
@@ -136,15 +143,18 @@ body {
   text-decoration: none;
   font-size: 14px;
   font-weight: 400;
+  min-height: 44px;
   border: 1.5px solid #7a1f2e;
   background: transparent;
-  padding: 6px 14px;
-  border-radius: 2px;
+  padding: 8px 16px;
+  border-radius: 3px;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   font-family: 'Georgia', serif;
   transition: all 0.15s ease;
+  touch-action: manipulation;
 }
 
 .header-links a:hover {
@@ -207,19 +217,163 @@ body {
   margin-top: 1px;
 }
 
-/* Presets */
-.preset-btn {
-  margin: 4px;
-  padding: 7px 14px;
-  font-size: 13px;
-  font-weight: 400;
+/* ─── Primary Voice Hero Action Card ─────────────────────────────── */
+.voice-hero-card {
+  background: #fdfbf7;
+  border: 1.5px solid #1e3a5f;
+  border-left: 5px solid #1e3a5f;
+  border-radius: 4px;
+  padding: 20px 22px;
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  box-shadow: 0 2px 8px rgba(30, 58, 95, 0.06);
+}
+
+.voice-hero-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.voice-hero-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: #1e3a5f;
+  background: rgba(30, 58, 95, 0.08);
+  padding: 3px 8px;
   border-radius: 2px;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  font-family: 'Georgia', serif;
+}
+
+.voice-hero-heading {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 21px;
+  font-weight: 700;
+  color: #1e3a5f;
+  margin-bottom: 4px;
+  line-height: 1.3;
+}
+
+.voice-hero-sub {
+  font-size: 14.5px;
+  color: #5a3e00;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.btn-voice-hero {
+  background: #1e3a5f;
+  color: #fdfbf7;
+  border: 1.5px solid #1e3a5f;
+  font-size: 16px;
+  font-weight: 700;
+  min-height: 48px;
+  padding: 12px 24px;
+  border-radius: 3px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  white-space: nowrap;
+  font-family: 'Georgia', serif;
+  touch-action: manipulation;
+}
+
+.btn-voice-hero:hover {
+  background: #12253f;
+  border-color: #12253f;
+  color: #ffffff;
+}
+
+/* ─── Collapsible Developer / Quick Test Presets Drawer ──────────── */
+.dev-test-drawer {
+  background: #faf6ee;
+  border: 1.5px dashed #c4b59b;
+  border-radius: 4px;
+  margin-bottom: 28px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.dev-test-summary {
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #5a4b3f;
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  user-select: none;
+  min-height: 44px;
+  font-family: 'Georgia', serif;
+  touch-action: manipulation;
+}
+
+.dev-test-summary::-webkit-details-marker {
+  display: none;
+}
+
+.dev-test-summary:hover {
+  background: rgba(122, 31, 46, 0.04);
+  color: #7a1f2e;
+}
+
+.drawer-chevron {
+  font-size: 11px;
+  transition: transform 0.2s ease;
+  color: #7a1f2e;
+}
+
+.dev-test-drawer[open] .drawer-chevron {
+  transform: rotate(180deg);
+}
+
+.dev-test-body {
+  padding: 14px 16px 16px;
+  border-top: 1px solid #e8dfc8;
+  background: #fdfbf7;
+}
+
+.dev-test-info {
+  font-size: 13.5px;
+  color: #5a4b3f;
+  margin-bottom: 12px;
+}
+
+.preset-buttons-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.preset-btn {
+  min-height: 44px;
+  padding: 10px 16px;
+  font-size: 13.5px;
+  font-weight: 500;
+  border-radius: 3px;
   border: 1.5px solid #7a1f2e;
   background: transparent;
   color: #7a1f2e;
   cursor: pointer;
   font-family: 'Georgia', serif;
   transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  touch-action: manipulation;
 }
 
 .preset-btn:hover {
@@ -227,61 +381,13 @@ body {
   color: #fdfbf7;
 }
 
-/* Quick Fill Panel & Voice Trigger */
-.quick-fill-panel {
-  margin-bottom: 20px;
-  padding: 16px;
-  background: #fcf9f2;
-  border: 1.5px solid #ecdcb8;
-  border-radius: 2px;
-  font-size: 15px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.quick-fill-title {
-  color: #5a3e00;
-  display: block;
-  margin-bottom: 6px;
-  font-family: 'Georgia', serif;
-}
-
-.quick-fill-voice-section {
-  border-top: 1px solid #e8dfc8;
-  padding-top: 12px;
-  margin-top: 4px;
-}
-
-.btn.btn-voice-trigger {
-  background: transparent;
-  border: 1.5px solid #1e3a5f !important; /* Force border to show up clearly */
-  color: #1e3a5f;
-  font-weight: 700;
-  width: 100%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  font-size: 16px;
-  padding: 12px;
-  border-radius: 2px;
-  transition: all 0.2s ease;
-}
-
-.btn.btn-voice-trigger:hover {
-  background: #1e3a5f !important;
-  color: #fdfbf7 !important;
-  border-color: #1e3a5f !important;
-}
-
-/* Section Boxes */
+/* ─── Form Section Boxes & Titles ────────────────────────────────── */
 .form-section {
   background-color: #fcf9f2;
   border: 1.5px solid #e8dfc8;
-  border-radius: 2px;
-  padding: 20px;
-  margin-bottom: 24px;
+  border-radius: 4px;
+  padding: 24px 20px;
+  margin-bottom: 28px;
 }
 
 .section-title {
@@ -289,12 +395,12 @@ body {
   font-size: 20px;
   font-weight: 700;
   color: #1a0a00;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
   display: flex;
   align-items: center;
   gap: 8px;
-  border-bottom: 1px solid rgba(122, 31, 46, 0.15);
-  padding-bottom: 6px;
+  border-bottom: 1.5px solid rgba(122, 31, 46, 0.15);
+  padding-bottom: 8px;
 }
 
 .section-title.owner {
@@ -340,16 +446,17 @@ body {
 label {
   display: block;
   font-weight: 700;
-  font-size: 16px;
+  font-size: 16.5px;
   color: #1a0a00;
-  margin-bottom: 6px;
+  margin-bottom: 7px;
 }
 
 .label-sub {
   font-weight: 400;
-  font-size: 13px;
+  font-size: 13.5px;
   color: #5a4b3f;
   display: block;
+  margin-top: 3px;
 }
 
 .req-star {
@@ -363,15 +470,17 @@ input[type="date"],
 select,
 textarea {
   width: 100%;
-  padding: 10px 12px;
-  font-size: 17px;
+  min-height: 48px;
+  padding: 12px 14px;
+  font-size: 16.5px;
   font-family: inherit;
   font-weight: 400;
   color: #1a0a00;
   background-color: #ffffff;
-  border: 1.5px solid #cbd5e1;
-  border-radius: 2px;
+  border: 1.5px solid #a89f91;
+  border-radius: 3px;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  box-sizing: border-box;
 }
 
 input:focus,
@@ -379,18 +488,18 @@ select:focus,
 textarea:focus {
   outline: none;
   border-color: #7a1f2e;
-  box-shadow: 0 0 0 3px rgba(122, 31, 46, 0.12);
+  box-shadow: 0 0 0 3px rgba(122, 31, 46, 0.18);
 }
 
 textarea {
   resize: vertical;
-  min-height: 80px;
+  min-height: 90px;
 }
 
 .input-hint {
-  font-size: 13px;
+  font-size: 13.5px;
   color: #5a4b3f;
-  margin-top: 4px;
+  margin-top: 6px;
 }
 
 /* Buttons */
@@ -399,16 +508,18 @@ textarea {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  font-size: 16px;
+  font-size: 16.5px;
   font-weight: 700;
-  padding: 12px 20px;
-  border-radius: 2px;
+  min-height: 48px;
+  padding: 14px 24px;
+  border-radius: 3px;
   cursor: pointer;
   text-decoration: none;
   border: 1.5px solid transparent;
   transition: all 0.15s ease-in-out;
   text-align: center;
   font-family: 'Georgia', serif;
+  touch-action: manipulation;
 }
 
 .btn-block {
@@ -572,8 +683,8 @@ textarea {
 /* ─── Voice Input ──────────────────────────────────────────────────── */
 .voice-input-wrapper {
   display: flex;
-  align-items: flex-start;
-  gap: 8px;
+  align-items: center;
+  gap: 10px;
 }
 
 .voice-input-wrapper input,
@@ -585,25 +696,27 @@ textarea {
 
 .mic-btn {
   flex-shrink: 0;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  border: 2px solid var(--border-medium);
-  background: #f8fafc;
+  width: 48px;
+  min-width: 48px;
+  height: 48px;
+  border-radius: 4px;
+  border: 1.5px solid #7a1f2e;
+  background: #fdfbf7;
+  color: #7a1f2e;
   cursor: pointer;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
+  font-size: 22px;
   transition: background 0.15s, border-color 0.15s, transform 0.1s;
-  margin-top: 0;
   position: relative;
   line-height: 1;
+  touch-action: manipulation;
 }
 
 .mic-btn:hover {
-  background: #e0f2fe;
-  border-color: #0284c7;
+  background: #7a1f2e;
+  color: #fdfbf7;
 }
 
 .mic-btn:focus-visible {
@@ -612,8 +725,8 @@ textarea {
 }
 
 .mic-btn.listening {
-  background: #dc2626;
-  border-color: #991b1b;
+  background: #7a1f2e;
+  border-color: #5a1520;
   color: #fff;
   animation: mic-pulse 1s ease-in-out infinite;
 }
@@ -1183,31 +1296,31 @@ textarea {
   }
 
   .container {
-    padding: 10px 8px;
+    padding: 12px 10px;
     width: 100%;
   }
 
   .app-header {
-    padding: 12px 10px;
+    padding: 14px 12px;
   }
 
   .header-inner {
-    gap: 10px;
+    gap: 12px;
   }
 
   .brand-title {
-    font-size: 18px;
-    gap: 6px;
+    font-size: 19px;
+    gap: 8px;
     flex-wrap: wrap;
   }
 
   .brand-badge {
     font-size: 10px;
-    padding: 2px 6px;
+    padding: 3px 6px;
   }
 
   .tagline {
-    font-size: 12px;
+    font-size: 12.5px;
   }
 
   .header-actions {
@@ -1215,21 +1328,27 @@ textarea {
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
-    gap: 8px;
+    gap: 10px;
   }
 
   .lang-switcher {
     flex: 1;
     min-width: 0;
+    display: flex;
     justify-content: space-between;
-    padding: 2px 4px;
-    gap: 2px;
+    padding: 3px 4px;
+    gap: 4px;
   }
 
   .lang-btn {
-    font-size: 11px;
-    padding: 4px 6px;
+    font-size: 12.5px;
+    min-height: 42px;
+    padding: 6px 10px;
     text-align: center;
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .header-links {
@@ -1237,55 +1356,106 @@ textarea {
   }
 
   .header-links a {
-    font-size: 12px;
-    padding: 5px 10px;
+    font-size: 13px;
+    min-height: 42px;
+    padding: 6px 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .main-card {
-    padding: 16px 12px;
-    margin-top: 12px;
-    border-radius: 2px;
+    padding: 18px 14px;
+    margin-top: 14px;
+    border-radius: 4px;
   }
 
   .page-title {
-    font-size: 20px;
-    padding-bottom: 8px;
+    font-size: 21px;
+    padding-bottom: 10px;
     letter-spacing: 0.5px;
   }
 
   .page-intro {
-    font-size: 13px;
-    padding: 10px 12px;
-    margin-bottom: 16px;
+    font-size: 13.5px;
+    padding: 12px 14px;
+    margin-bottom: 20px;
   }
 
-  .form-section {
-    padding: 14px 10px;
-    margin-bottom: 16px;
+  /* Voice Hero Card on Mobile */
+  .voice-hero-card {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 18px 14px;
+    gap: 14px;
+    margin-bottom: 20px;
   }
 
-  .section-title {
-    font-size: 17px;
-    margin-bottom: 12px;
+  .voice-hero-heading {
+    font-size: 19px;
   }
 
-  .quick-fill-panel {
-    padding: 12px 10px;
+  .voice-hero-sub {
+    font-size: 13.5px;
+  }
+
+  .btn-voice-hero {
+    width: 100%;
+    min-height: 48px;
+    font-size: 16px;
+    padding: 12px 16px;
+    justify-content: center;
+  }
+
+  /* Dev Test Drawer on Mobile */
+  .dev-test-drawer {
+    margin-bottom: 24px;
+  }
+
+  .dev-test-summary {
+    padding: 12px 14px;
+    font-size: 13.5px;
+    min-height: 44px;
+  }
+
+  .dev-test-body {
+    padding: 12px 14px 14px;
   }
 
   .preset-btn {
-    font-size: 12px;
-    padding: 6px 10px;
-    margin: 3px 2px;
+    font-size: 13px;
+    min-height: 44px;
+    padding: 8px 14px;
+    flex: 1 1 calc(50% - 8px);
   }
 
-  .btn.btn-voice-trigger {
-    font-size: 14px;
-    padding: 10px 12px;
+  /* Form Sections & Fields on Mobile */
+  .form-section {
+    padding: 18px 14px;
+    margin-bottom: 24px;
+  }
+
+  .section-title {
+    font-size: 18px;
+    margin-bottom: 16px;
+    padding-bottom: 6px;
+  }
+
+  .form-group {
+    margin-bottom: 18px;
+  }
+
+  label {
+    font-size: 15.5px;
+    margin-bottom: 6px;
+  }
+
+  .label-sub {
+    font-size: 13px;
   }
 
   .voice-input-wrapper {
-    gap: 6px;
+    gap: 8px;
     width: 100%;
   }
 
@@ -1293,17 +1463,26 @@ textarea {
   .voice-input-wrapper textarea,
   .voice-input-wrapper select {
     font-size: 16px; /* Prevents auto-zoom on iOS Safari */
+    min-height: 48px;
+    padding: 11px 12px;
   }
 
   .mic-btn {
-    width: 40px;
-    height: 40px;
-    font-size: 18px;
+    width: 48px;
+    min-width: 48px;
+    height: 48px;
+    font-size: 22px;
+  }
+
+  .btn-primary.btn-block {
+    min-height: 52px;
+    font-size: 17.5px;
+    padding: 14px 18px;
   }
 
   /* Full Screen Voice Overlay Mobile */
   .voice-overlay {
-    padding: 14px 10px 16px;
+    padding: 16px 12px 18px;
     border: none;
   }
 
@@ -1316,76 +1495,87 @@ textarea {
   }
 
   .voice-title-badge {
-    font-size: 10px;
-    padding: 3px 8px;
+    font-size: 10.5px;
+    padding: 4px 10px;
     letter-spacing: 1px;
   }
 
   .voice-doc-title {
-    font-size: 18px;
+    font-size: 19px;
     letter-spacing: 2px;
     margin-top: 2px;
   }
 
   .voice-exit-btn {
-    font-size: 11px;
-    padding: 4px 8px;
+    font-size: 12px;
+    min-height: 38px;
+    padding: 6px 12px;
+    display: inline-flex;
+    align-items: center;
   }
 
   .voice-orb-container {
-    gap: 10px;
+    gap: 12px;
   }
 
   .voice-orb {
-    width: 84px;
-    height: 84px;
+    width: 88px;
+    height: 88px;
   }
 
   .voice-orb::before {
-    font-size: 30px;
+    font-size: 32px;
   }
 
   .voice-indicator-text {
-    font-size: 11px;
+    font-size: 11.5px;
     letter-spacing: 1.5px;
   }
 
   .voice-question-title {
-    font-size: 10px;
+    font-size: 10.5px;
     letter-spacing: 1px;
   }
 
   .voice-question-text {
-    font-size: 16px;
-    min-height: 44px;
-    padding: 0 4px;
+    font-size: 17px;
+    min-height: 46px;
+    padding: 0 6px;
     line-height: 1.35;
   }
 
   .voice-transcript-preview {
-    font-size: 13px;
-    padding-left: 6px;
+    font-size: 13.5px;
+    padding-left: 8px;
   }
 
   .voice-controls-footer {
-    gap: 6px;
-    padding-top: 8px;
+    gap: 8px;
+    padding-top: 10px;
   }
 
   .voice-circle-btn {
     min-width: 0;
+    min-height: 44px;
     flex: 1;
-    padding: 9px 4px;
-    font-size: 12px;
+    padding: 10px 6px;
+    font-size: 12.5px;
     letter-spacing: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .voice-end-call-btn {
     min-width: 0;
-    flex: 1.2;
-    padding: 9px 6px;
-    font-size: 12px;
+    min-height: 44px;
+    flex: 1.25;
+    padding: 10px 8px;
+    font-size: 13px;
     letter-spacing: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
 
   /* Review Screen Mobile */
@@ -1394,82 +1584,84 @@ textarea {
   }
 
   .review-modal-content {
-    padding: 16px 12px;
+    padding: 18px 14px;
     max-height: 94dvh;
     border-radius: 4px;
     border-width: 2px;
   }
 
   .review-title {
-    font-size: 19px;
+    font-size: 20px;
   }
 
   .review-subtitle {
-    font-size: 13px;
+    font-size: 13.5px;
     margin-bottom: 16px;
   }
 
   .review-grid {
     grid-template-columns: 1fr;
-    gap: 10px;
-    margin-bottom: 18px;
+    gap: 12px;
+    margin-bottom: 20px;
   }
 
   .review-group input,
   .review-group textarea,
   .review-group select {
     font-size: 16px; /* Prevents auto-zoom on iOS */
-    padding: 8px 10px;
+    min-height: 46px;
+    padding: 10px 12px;
   }
 
   .review-actions {
     flex-direction: column-reverse;
-    gap: 8px;
-    padding-top: 14px;
+    gap: 10px;
+    padding-top: 16px;
   }
 
   .review-actions .btn {
     width: 100%;
-    padding: 11px;
-    font-size: 15px;
+    min-height: 48px;
+    padding: 12px;
+    font-size: 15.5px;
   }
 
   /* Agreement & Verification details */
   .detail-grid {
     grid-template-columns: 1fr;
-    gap: 10px;
+    gap: 12px;
   }
 
   .detail-value {
-    font-size: 16px;
+    font-size: 16.5px;
   }
 
   .detail-value.wage {
-    font-size: 19px;
+    font-size: 20px;
   }
 
   .verified-banner {
-    padding: 12px 8px;
-  }
-
-  .verified-icon {
-    font-size: 30px;
-  }
-
-  .verified-title {
-    font-size: 17px;
-  }
-
-  .verified-sub {
-    font-size: 13px;
-  }
-
-  .qr-section {
     padding: 14px 10px;
   }
 
+  .verified-icon {
+    font-size: 32px;
+  }
+
+  .verified-title {
+    font-size: 18px;
+  }
+
+  .verified-sub {
+    font-size: 13.5px;
+  }
+
+  .qr-section {
+    padding: 16px 12px;
+  }
+
   .qr-image {
-    max-width: 140px;
+    max-width: 150px;
   }
 }
 
