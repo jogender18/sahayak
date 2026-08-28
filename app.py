@@ -10,8 +10,16 @@ from translations import TRANSLATIONS, get_text
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'sahayak-wage-secret-key-2026'
 
-# Ensure database is initialized
-init_db()
+# Initialize DB on first request (not at import time) so gunicorn workers
+# start immediately and don't block waiting for the DB connection.
+_db_initialized = False
+
+@app.before_request
+def ensure_db():
+    global _db_initialized
+    if not _db_initialized:
+        init_db()
+        _db_initialized = True
 
 def get_base_url():
     """
