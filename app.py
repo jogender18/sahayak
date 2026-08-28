@@ -7,6 +7,8 @@ from database import init_db, create_agreement, get_agreement, list_recent_agree
 from pdf_generator import generate_agreement_pdf
 from translations import TRANSLATIONS, get_text
 from ai_voice_assistant import process_conversation_turn
+import urllib.parse
+
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'sahayak-wage-secret-key-2026'
@@ -247,10 +249,14 @@ def voice_assistant_converse():
             lang=lang
         )
 
+        reply = result.get('reply', '')
+        audio_url = f"/api/tts?text={urllib.parse.quote(reply)}&lang={lang}"
+
         return jsonify({
             'success': True,
             'extracted_fields': result.get('extracted_fields', {}),
-            'reply': result.get('reply', ''),
+            'reply': reply,
+            'audio_url': audio_url,
             'is_complete': result.get('is_complete', False),
             'missing_fields': result.get('missing_fields', [])
         })
@@ -265,6 +271,44 @@ def voice_assistant_converse():
             'is_complete': False,
             'missing_fields': ['owner_name', 'worker_name', 'work_description', 'wage_amount']
         }), 500
+
+
+@app.route('/api/tts')
+def api_tts():
+    """
+    Generate high-quality open-source TTS audio stream using gTTS.
+    Supports English, Hindi, and Telugu with realistic voice inflections.
+    """
+    text = request.args.get('text', '').strip()
+    lang = request.args.get('lang', 'en')
+    if not text:
+        return jsonify({'error': 'No text provided'}), 400
+
+    lang_map = {
+        'en': 'en',
+        'hi': 'hi',
+        'te': 'te'
+    }
+    tts_lang = lang_map.get(lang, 'en')
+
+    try:
+        from gtts import gTTS
+        import io
+
+        tts = gTTS(text=text, lang=tts_lang, slow=False)
+        fp = io.BytesIO()
+        tts.write_to_fp(fp)
+        fp.seek(0)
+
+        return send_file(
+            fp,
+            mimetype='audio/mp3',
+            as_attachment=False,
+            download_name='speech.mp3'
+        )
+    except Exception as e:
+        print(f"[TTS Endpoint] Error: {e}")
+        return jsonify({'error': str(e)}), 500
 
 
 if __name__ == '__main__':

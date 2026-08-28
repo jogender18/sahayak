@@ -603,6 +603,7 @@
     let isMuted = false;
     let activeRecognition = null;
     let activeUtterance = null;
+    let activeAudio = null;
     let nextStepTimeout = null;
 
     // Speech locales map
@@ -644,6 +645,10 @@
         window.speechSynthesis.cancel();
       }
       activeUtterance = null;
+      if (activeAudio) {
+        try { activeAudio.pause(); } catch(e) {}
+        activeAudio = null;
+      }
     }
 
     // Change orb state indication
@@ -704,23 +709,52 @@
       });
     }
 
-    // TTS speaker
+    // TTS speaker: loads high-quality open-source voice from server TTS endpoint,
+    // with local browser SpeechSynthesis fallback if offline or fails.
     function speakText(text, callback) {
       if (isMuted) {
         callback();
         return;
       }
-      activeUtterance = new SpeechSynthesisUtterance(text);
-      activeUtterance.lang = activeLocale.synthesis;
-      activeUtterance.onend = () => {
-        activeUtterance = null;
-        callback();
+
+      // Try server-side gTTS first
+      const audioUrl = `/api/tts?text=${encodeURIComponent(text)}&lang=${currentLang}`;
+      const audio = new Audio(audioUrl);
+      activeAudio = audio;
+
+      let hasFired = false;
+      function handleCompletion() {
+        if (!hasFired) {
+          hasFired = true;
+          activeAudio = null;
+          callback();
+        }
+      }
+
+      audio.onended = handleCompletion;
+      audio.onerror = (e) => {
+        console.warn("[TTS] Server-side audio failed, falling back to browser SpeechSynthesis:", e);
+        if (hasFired) return;
+        
+        // Fallback to local browser SpeechSynthesis
+        activeUtterance = new SpeechSynthesisUtterance(text);
+        activeUtterance.lang = activeLocale.synthesis;
+        activeUtterance.onend = () => {
+          activeUtterance = null;
+          handleCompletion();
+        };
+        activeUtterance.onerror = () => {
+          activeUtterance = null;
+          handleCompletion();
+        };
+        window.speechSynthesis.speak(activeUtterance);
       };
-      activeUtterance.onerror = () => {
-        activeUtterance = null;
-        callback();
-      };
-      window.speechSynthesis.speak(activeUtterance);
+
+      try {
+        audio.play();
+      } catch (err) {
+        audio.onerror(err);
+      }
     }
 
     // Normalizer for wage number words
@@ -757,6 +791,7 @@
     const readSummaryBtn = document.getElementById('read-summary-btn');
     const readSummaryIcon = document.getElementById('read-summary-icon');
     const readSummaryText = document.getElementById('read-summary-text');
+    let activeSummaryAudio = null;
     let isReadingSummary = false;
     let isConfirmedSubmission = false;
 
@@ -792,6 +827,10 @@
       if (window.speechSynthesis) {
         window.speechSynthesis.cancel();
       }
+      if (activeSummaryAudio) {
+        try { activeSummaryAudio.pause(); } catch(e) {}
+        activeSummaryAudio = null;
+      }
       isReadingSummary = false;
       if (readSummaryBtn) {
         readSummaryBtn.classList.remove('speaking');
@@ -808,37 +847,50 @@
         return;
       }
 
-      if (!('speechSynthesis' in window)) {
-        alert('Text-to-Speech is not supported on this browser.');
-        return;
+      const textToRead = generatePlainSummary();
+      isReadingSummary = true;
+      if (readSummaryBtn) readSummaryBtn.classList.add('speaking');
+      if (readSummaryIcon) readSummaryIcon.textContent = '⏹';
+      if (readSummaryText) {
+        readSummaryText.textContent = currentLang === 'hi' ? 'पढ़ना बंद करें' : (currentLang === 'te' ? 'ఆపండి' : 'Stop Reading');
       }
 
-      window.speechSynthesis.cancel();
-      const textToRead = generatePlainSummary();
-      const utterance = new SpeechSynthesisUtterance(textToRead);
-      
-      const langCodeMap = { 'en': 'en-IN', 'hi': 'hi-IN', 'te': 'te-IN' };
-      utterance.lang = langCodeMap[currentLang] || 'en-IN';
-      utterance.rate = 0.95;
+      const audioUrl = `/api/tts?text=${encodeURIComponent(textToRead)}&lang=${currentLang}`;
+      const audio = new Audio(audioUrl);
+      activeSummaryAudio = audio;
 
-      utterance.onstart = () => {
-        isReadingSummary = true;
-        if (readSummaryBtn) readSummaryBtn.classList.add('speaking');
-        if (readSummaryIcon) readSummaryIcon.textContent = '⏹';
-        if (readSummaryText) {
-          readSummaryText.textContent = currentLang === 'hi' ? 'पढ़ना बंद करें' : (currentLang === 'te' ? 'ఆపండి' : 'Stop Reading');
-        }
-      };
+      let fallbackTriggered = false;
 
-      utterance.onend = () => {
+      audio.onended = () => {
         stopSummaryTTS();
       };
 
-      utterance.onerror = () => {
-        stopSummaryTTS();
+      audio.onerror = (e) => {
+        console.warn("[TTS Summary] Server audio failed, falling back to browser SpeechSynthesis:", e);
+        if (fallbackTriggered) return;
+        fallbackTriggered = true;
+        
+        // Fallback to local browser SpeechSynthesis
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(textToRead);
+        const langCodeMap = { 'en': 'en-IN', 'hi': 'hi-IN', 'te': 'te-IN' };
+        utterance.lang = langCodeMap[currentLang] || 'en-IN';
+        utterance.rate = 0.95;
+        
+        utterance.onend = () => {
+          stopSummaryTTS();
+        };
+        utterance.onerror = () => {
+          stopSummaryTTS();
+        };
+        window.speechSynthesis.speak(utterance);
       };
 
-      window.speechSynthesis.speak(utterance);
+      try {
+        audio.play();
+      } catch (err) {
+        audio.onerror(err);
+      }
     }
 
     if (readSummaryBtn) {
