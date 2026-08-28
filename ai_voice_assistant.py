@@ -33,6 +33,14 @@ def process_conversation_turn(user_message, conversation_history=None, current_s
 
     openai_key = os.environ.get('OPENAI_API_KEY')
     gemini_key = os.environ.get('GEMINI_API_KEY')
+    groq_key = os.environ.get('GROQ_API_KEY')
+
+    # Try Groq first since it is free, fast, and open source oriented
+    if groq_key:
+        try:
+            return _call_groq(user_message, conversation_history, current_state, lang, groq_key)
+        except Exception as e:
+            print(f'[AI] Groq error: {e}, falling back...')
 
     if openai_key:
         try:
@@ -47,6 +55,32 @@ def process_conversation_turn(user_message, conversation_history=None, current_s
             print(f'[AI] Gemini error: {e}, falling back...')
 
     return _fallback_nlp(user_message, conversation_history, current_state, lang)
+
+
+def _call_groq(user_message, history, state, lang, api_key):
+    import openai
+    client = openai.OpenAI(
+        base_url="https://api.groq.com/openai/v1",
+        api_key=api_key
+    )
+    # Default to llama-3.3-70b-versatile for high quality, or llama3-8b-8192
+    model = os.environ.get('GROQ_MODEL', 'llama-3.3-70b-versatile')
+    messages = [
+        {'role': 'system', 'content': SYSTEM_PROMPT},
+        {'role': 'system', 'content': f'Target Language: {lang}. Current extracted fields: {json.dumps(state, ensure_ascii=False)}'}
+    ]
+    for t in history[-6:]:
+        messages.append({'role': t.get('role', 'user'), 'content': t.get('content', '')})
+    messages.append({'role': 'user', 'content': user_message})
+    
+    resp = client.chat.completions.create(
+        model=model,
+        messages=messages,
+        response_format={'type': 'json_object'},
+        temperature=0.3,
+        max_tokens=500
+    )
+    return _merge(json.loads(resp.choices[0].message.content), state)
 
 
 def _call_openai(user_message, history, state, lang, api_key):
