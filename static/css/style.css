@@ -575,231 +575,356 @@ textarea {
   margin-top: 4px;
 }
 
-/* Conversational Voice Overlay Mode */
+/* ===================== VOICE OVERLAY — Document / Wage Agreement Theme ===================== */
 .voice-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
-  color: #f8fafc;
+  /* Warm cream paper background — matches the Wage Agreement document */
+  background: #f5f0e8;
+  /* Subtle horizontal ruled-paper lines for document feel */
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 34px,
+      rgba(180, 160, 120, 0.12) 34px,
+      rgba(180, 160, 120, 0.12) 35px
+    );
+  color: #1a0a00;
   z-index: 10000;
   display: none;
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  padding: 30px 20px;
+  padding: 36px 24px 30px;
   box-sizing: border-box;
+  /* faint border to simulate document edges */
+  border: 6px solid #e8dfc8;
 }
 
+/* Top rule line under header — mimics document header underline */
+.voice-overlay::before {
+  content: '';
+  position: absolute;
+  top: 90px;
+  left: 5%;
+  width: 90%;
+  height: 2px;
+  background: linear-gradient(to right, transparent, #7a1f2e, transparent);
+  opacity: 0.4;
+}
+
+/* ---- Header bar ---- */
 .voice-overlay-header {
   width: 100%;
-  max-width: 600px;
+  max-width: 640px;
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
+  gap: 4px;
+  position: relative;
 }
 
+/* Replaces neon pill badge: looks like a document stamp label */
 .voice-title-badge {
-  background: rgba(245, 158, 11, 0.15);
-  color: #fbbf24;
-  border: 1px solid rgba(245, 158, 11, 0.3);
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 14px;
-  font-weight: 700;
+  background: transparent;
+  color: #7a1f2e;          /* deep maroon — matches PDF header */
+  border: 1.5px solid #7a1f2e;
+  padding: 5px 18px;
+  border-radius: 2px;      /* rectangular, not pill */
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 3px;
+  text-transform: uppercase;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
-.voice-exit-btn {
-  background: rgba(239, 68, 68, 0.2);
-  color: #fca5a5;
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  padding: 8px 16px;
-  border-radius: 8px;
+.voice-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #7a1f2e;
+  display: inline-block;
+  animation: dot-blink 1.6s ease-in-out infinite;
+}
+
+@keyframes dot-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.2; }
+}
+
+/* Main document title — mirrors "WAGE AGREEMENT" heading from the PDF */
+.voice-overlay-header::after {
+  content: 'WAGE AGREEMENT';
+  display: block;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 26px;
   font-weight: 700;
+  letter-spacing: 4px;
+  color: #1a0a00;
+  text-align: center;
+  margin-top: 6px;
+}
+
+/* Exit button: plain rectangular document-style */
+.voice-exit-btn {
+  position: absolute;
+  right: 0;
+  top: 0;
+  background: transparent;
+  color: #7a1f2e;
+  border: 1.5px solid #7a1f2e;
+  padding: 6px 14px;
+  border-radius: 2px;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 13px;
+  font-weight: 400;
   cursor: pointer;
-  transition: all 0.2s;
+  letter-spacing: 1px;
+  transition: background 0.2s, color 0.2s;
 }
 
 .voice-exit-btn:hover {
-  background: rgba(239, 68, 68, 0.35);
-  color: #ffffff;
+  background: #7a1f2e;
+  color: #f5f0e8;
 }
 
+/* ---- Centre area: seal indicator + question text ---- */
 .voice-orb-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 20px;
+  gap: 18px;
   flex: 1;
   width: 100%;
   max-width: 600px;
 }
 
+/* Seal / stamp indicator — replaces glowing coloured orb */
 .voice-orb {
-  width: 120px;
-  height: 120px;
+  width: 110px;
+  height: 110px;
   border-radius: 50%;
-  background: radial-gradient(circle, #3b82f6 0%, #1d4ed8 70%, #1e3a8a 100%);
-  box-shadow: 0 0 40px rgba(59, 130, 246, 0.4);
+  /* Plain cream fill with maroon double ring — document seal look */
+  background: #f5f0e8;
+  border: 4px double #7a1f2e;
+  box-shadow:
+    0 0 0 6px #f5f0e8,
+    0 0 0 8px #7a1f2e,
+    0 2px 12px rgba(122, 31, 46, 0.18);
   position: relative;
-  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: box-shadow 0.4s ease, border-color 0.4s ease;
 }
 
-/* Speaking State: Amber/Yellow gentle pulse */
+/* Inner seal icon (📜) displayed via pseudo-element */
+.voice-orb::before {
+  content: '📜';
+  font-size: 38px;
+  line-height: 1;
+  opacity: 0.85;
+}
+
+/* Speaking: maroon pulsing ring */
 .voice-orb.speaking {
-  background: radial-gradient(circle, #f59e0b 0%, #d97706 70%, #78350f 100%);
-  box-shadow: 0 0 50px rgba(245, 158, 11, 0.6);
-  animation: orb-speaking 1.4s ease-in-out infinite alternate;
+  border-color: #7a1f2e;
+  box-shadow:
+    0 0 0 6px #f5f0e8,
+    0 0 0 8px #7a1f2e,
+    0 0 0 14px rgba(122, 31, 46, 0.2),
+    0 2px 12px rgba(122, 31, 46, 0.25);
+  animation: seal-speaking 1.6s ease-in-out infinite alternate;
 }
 
-/* Listening State: Green active vibration pulse */
+/* Listening: navy pulsing ring */
 .voice-orb.listening {
-  background: radial-gradient(circle, #10b981 0%, #059669 70%, #064e3b 100%);
-  box-shadow: 0 0 60px rgba(16, 185, 129, 0.7);
-  animation: orb-listening 0.8s ease-in-out infinite alternate;
+  border-color: #1e3a5f;
+  box-shadow:
+    0 0 0 6px #f5f0e8,
+    0 0 0 8px #1e3a5f,
+    0 0 0 14px rgba(30, 58, 95, 0.22),
+    0 2px 12px rgba(30, 58, 95, 0.28);
+  animation: seal-listening 0.9s ease-in-out infinite alternate;
 }
 
-/* Processing State: Violet/Purple spin */
+/* Processing: slow rotation of outer ring */
 .voice-orb.processing {
-  background: radial-gradient(circle, #8b5cf6 0%, #7c3aed 70%, #4c1d95 100%);
-  box-shadow: 0 0 50px rgba(139, 92, 246, 0.6);
-  animation: orb-processing 1.2s linear infinite;
+  border-color: #5a3e00;
+  box-shadow:
+    0 0 0 6px #f5f0e8,
+    0 0 0 8px #5a3e00,
+    0 2px 12px rgba(90, 62, 0, 0.2);
+  animation: seal-processing 2s linear infinite;
 }
 
-/* Rippling ring for listening state */
+/* Ripple ring for listening */
 .orb-ring {
   position: absolute;
-  top: -10px;
-  left: -10px;
-  right: -10px;
-  bottom: -10px;
+  top: -12px;
+  left: -12px;
+  right: -12px;
+  bottom: -12px;
   border-radius: 50%;
-  border: 2px solid rgba(59, 130, 246, 0.3);
+  border: 1.5px solid rgba(30, 58, 95, 0.35);
   opacity: 0;
   pointer-events: none;
 }
 
 .voice-orb.listening .orb-ring {
-  border-color: rgba(16, 185, 129, 0.4);
-  animation: orb-ring-expand 1.6s cubic-bezier(0, 0, 0.2, 1) infinite;
+  animation: seal-ring-expand 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
 }
 
-@keyframes orb-speaking {
-  0% { transform: scale(1); box-shadow: 0 0 30px rgba(245, 158, 11, 0.4); }
-  100% { transform: scale(1.1); box-shadow: 0 0 50px rgba(245, 158, 11, 0.7); }
+@keyframes seal-speaking {
+  0%   { box-shadow: 0 0 0 6px #f5f0e8, 0 0 0 8px #7a1f2e, 0 0 0 12px rgba(122,31,46,0.15), 0 2px 10px rgba(122,31,46,0.2); }
+  100% { box-shadow: 0 0 0 6px #f5f0e8, 0 0 0 8px #7a1f2e, 0 0 0 20px rgba(122,31,46,0.28), 0 2px 18px rgba(122,31,46,0.3); }
 }
 
-@keyframes orb-listening {
-  0% { transform: scale(1.05); box-shadow: 0 0 40px rgba(16, 185, 129, 0.5); }
-  100% { transform: scale(1.2); box-shadow: 0 0 70px rgba(16, 185, 129, 0.8); }
+@keyframes seal-listening {
+  0%   { box-shadow: 0 0 0 6px #f5f0e8, 0 0 0 8px #1e3a5f, 0 0 0 12px rgba(30,58,95,0.15), 0 2px 10px rgba(30,58,95,0.2); }
+  100% { box-shadow: 0 0 0 6px #f5f0e8, 0 0 0 8px #1e3a5f, 0 0 0 22px rgba(30,58,95,0.32), 0 2px 18px rgba(30,58,95,0.35); }
 }
 
-@keyframes orb-processing {
-  0% { transform: rotate(0deg) scale(1); }
-  50% { transform: rotate(180deg) scale(1.05); }
-  100% { transform: rotate(360deg) scale(1); }
+@keyframes seal-processing {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
-@keyframes orb-ring-expand {
-  0% { transform: scale(1); opacity: 1; }
-  100% { transform: scale(1.5); opacity: 0; }
+@keyframes seal-ring-expand {
+  0%   { transform: scale(1);   opacity: 0.7; }
+  100% { transform: scale(1.6); opacity: 0;   }
 }
 
+/* State label (SPEAK NOW / SPEAKING / PROCESSING) */
 .voice-indicator-text {
-  font-size: 14px;
-  font-weight: 800;
-  color: #cbd5e1;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 12px;
+  font-weight: 400;
+  color: #7a1f2e;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 3px;
 }
 
+/* "Question N of 12" counter — formal document caption */
 .voice-question-title {
-  font-size: 13px;
-  font-weight: 700;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 11px;
+  font-weight: 400;
   text-transform: uppercase;
-  letter-spacing: 1.5px;
-  color: #94a3b8;
-  margin-bottom: 6px;
+  letter-spacing: 2.5px;
+  color: #5a3e00;
+  margin-bottom: 8px;
+  border-bottom: 1px solid rgba(122, 31, 46, 0.2);
+  padding-bottom: 4px;
 }
 
+/* Main question text — formal serif, dark ink */
 .voice-question-text {
-  font-size: 22px;
-  font-weight: 800;
-  line-height: 1.35;
-  color: #f8fafc;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 21px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #1a0a00;
   min-height: 60px;
   padding: 0 10px;
+  text-align: center;
 }
 
+/* Live transcript preview — muted ink colour, italic */
 .voice-transcript-preview {
-  font-size: 17px;
-  color: #38bdf8;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 16px;
+  color: #5a3e00;
   font-style: italic;
   min-height: 26px;
-  margin-top: 10px;
+  margin-top: 8px;
   max-width: 440px;
   display: inline-block;
+  border-left: 3px solid rgba(122, 31, 46, 0.3);
+  padding-left: 10px;
 }
 
+/* ---- Bottom controls footer ---- */
 .voice-controls-footer {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 24px;
+  gap: 16px;
   width: 100%;
+  padding-top: 10px;
+  border-top: 1px solid rgba(122, 31, 46, 0.2);
 }
 
+/* Document-style rectangular bordered buttons (Mute, Skip) */
 .voice-circle-btn {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  border: 1.5px solid rgba(255, 255, 255, 0.25);
-  background: rgba(255, 255, 255, 0.08);
-  color: #ffffff;
-  font-size: 20px;
+  width: auto;
+  height: auto;
+  min-width: 90px;
+  border-radius: 2px;           /* rectangular, not circular */
+  border: 1.5px solid #7a1f2e;
+  background: transparent;
+  color: #7a1f2e;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 1px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s;
+  gap: 6px;
+  padding: 9px 18px;
+  transition: background 0.2s, color 0.2s;
 }
 
 .voice-circle-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: scale(1.06);
+  background: #7a1f2e;
+  color: #f5f0e8;
+  transform: none;
 }
 
 .voice-circle-btn.muted {
-  background: #dc2626;
-  border-color: #991b1b;
+  background: #7a1f2e;
+  color: #f5f0e8;
+  border-color: #7a1f2e;
 }
 
+/* End Session button: maroon filled rectangle */
 .voice-end-call-btn {
-  width: 68px;
-  height: 68px;
-  border-radius: 50%;
-  border: none;
-  background: #dc2626;
-  color: #ffffff;
-  font-size: 24px;
+  width: auto;
+  height: auto;
+  min-width: 120px;
+  border-radius: 2px;
+  border: 1.5px solid #7a1f2e;
+  background: #7a1f2e;
+  color: #f5f0e8;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 1px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 15px rgba(220, 38, 38, 0.4);
-  transition: all 0.2s;
+  gap: 6px;
+  padding: 11px 22px;
+  box-shadow: none;
+  transition: background 0.2s, color 0.2s;
 }
 
 .voice-end-call-btn:hover {
-  background: #b91c1c;
-  transform: scale(1.08);
-  box-shadow: 0 6px 20px rgba(220, 38, 38, 0.6);
+  background: #5a1520;
+  border-color: #5a1520;
+  transform: none;
+  box-shadow: none;
 }
 
 /* Review Modal styling */

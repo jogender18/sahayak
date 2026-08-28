@@ -31,13 +31,13 @@
     <div class="voice-overlay-header">
       <div class="voice-title-badge">
         <span class="voice-status-dot"></span>
-        <span id="voice-badge-text">Sahayak Voice Assistant</span>
+        <span id="voice-badge-text">Voice Dictation Mode</span>
       </div>
-      <button type="button" class="voice-exit-btn" id="voice-exit-btn">{{ t.voice_btn_exit }}</button>
+      <button type="button" class="voice-exit-btn" id="voice-exit-btn">✕ Exit</button>
     </div>
 
     <div class="voice-orb-container">
-      <!-- Animated Orb in center -->
+      <!-- Seal indicator in center -->
       <div class="voice-orb" id="voice-orb">
         <div class="orb-ring"></div>
       </div>
@@ -52,11 +52,11 @@
       </div>
     </div>
 
-    <!-- Controls footer: Mute, Red Circular End Call, Skip -->
+    <!-- Controls footer: document-style rectangular buttons -->
     <div class="voice-controls-footer">
-      <button type="button" class="voice-circle-btn" id="voice-mute-btn" title="{{ t.voice_btn_mute }}">🔇</button>
-      <button type="button" class="voice-end-call-btn" id="voice-end-btn" title="End Call">❌</button>
-      <button type="button" class="voice-circle-btn" id="voice-skip-btn" title="{{ t.voice_btn_skip }}">➡️</button>
+      <button type="button" class="voice-circle-btn" id="voice-mute-btn" title="{{ t.voice_btn_mute }}">⏸ Mute</button>
+      <button type="button" class="voice-end-call-btn" id="voice-end-btn" title="End Session">✕ End Session</button>
+      <button type="button" class="voice-circle-btn" id="voice-skip-btn" title="{{ t.voice_btn_skip }}">↷ Skip</button>
     </div>
   </div>
 
@@ -823,11 +823,11 @@
     muteBtn.addEventListener('click', () => {
       isMuted = !isMuted;
       if (isMuted) {
-        muteBtn.textContent = "🔇";
+        muteBtn.innerHTML = "&#9654; Unmute";
         muteBtn.classList.add('muted');
         if (window.speechSynthesis) window.speechSynthesis.cancel();
       } else {
-        muteBtn.textContent = "🔊";
+        muteBtn.innerHTML = "&#9646;&#9646; Mute";
         muteBtn.classList.remove('muted');
         askQuestion();
       }
