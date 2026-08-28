@@ -1,6 +1,5 @@
 """
-Automated screenshot generator for the conversational full-screen voice assistant.
-Captures the three main voice assistant interface states.
+Automated screenshot generator for the conversational voice mode UI and the new Review Screen.
 """
 import subprocess
 import time
@@ -22,7 +21,7 @@ def capture(url_suffix, filename):
         "--headless=new",
         "--disable-gpu",
         "--no-sandbox",
-        "--window-size=480,850",
+        "--window-size=500,850",
         f"--screenshot={out_path}",
         "--hide-scrollbars",
         BASE_URL + url_suffix
@@ -36,8 +35,7 @@ def capture(url_suffix, filename):
     else:
         print(f"FAILED to capture: {filename}")
 
-print("Capturing voice assistant states...")
+print("Capturing conversational voice UI and review screen...")
 capture("?mock_voice_state=1", "voice_assistant_start.png")
-capture("?mock_voice_state=2", "voice_assistant_work_desc.png")
-capture("?mock_voice_state=3", "voice_assistant_wage.png")
+capture("?mock_review_state=1", "voice_assistant_review.png")
 print("Done.")

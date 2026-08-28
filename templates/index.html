@@ -52,11 +52,97 @@
       </div>
     </div>
 
-    <!-- Controls footer -->
+    <!-- Controls footer: Mute, Red Circular End Call, Skip -->
     <div class="voice-controls-footer">
-      <button type="button" class="voice-action-btn" id="voice-mute-btn">🔇 {{ t.voice_btn_mute }}</button>
-      <button type="button" class="voice-action-btn" id="voice-restart-btn">🔄 {{ t.voice_btn_restart }}</button>
-      <button type="button" class="voice-action-btn primary" id="voice-skip-btn">{{ t.voice_btn_skip }} ➡️</button>
+      <button type="button" class="voice-circle-btn" id="voice-mute-btn" title="{{ t.voice_btn_mute }}">🔇</button>
+      <button type="button" class="voice-end-call-btn" id="voice-end-btn" title="End Call">❌</button>
+      <button type="button" class="voice-circle-btn" id="voice-skip-btn" title="{{ t.voice_btn_skip }}">➡️</button>
+    </div>
+  </div>
+
+  <!-- Conversational Review Modal -->
+  <div id="review-modal" class="review-modal" {% if request.args.get('mock_review_state') %}style="display: flex;"{% endif %}>
+    <div class="review-modal-content">
+      <h2 class="review-title">📋 {{ t.summary_title }}</h2>
+      <p class="review-subtitle">Please verify and edit the collected information before finalizing the contract.</p>
+      
+      <div class="review-grid">
+        <!-- Section 1: Owner -->
+        <div class="review-group">
+          <label>{{ t.owner_name_label }}</label>
+          <input type="text" id="rev_owner_name">
+        </div>
+        <div class="review-group">
+          <label>{{ t.owner_phone_label }}</label>
+          <input type="tel" id="rev_owner_phone">
+        </div>
+
+        <!-- Section 2: Worker -->
+        <div class="review-group">
+          <label>{{ t.worker_name_label }}</label>
+          <input type="text" id="rev_worker_name">
+        </div>
+        <div class="review-group">
+          <label>{{ t.worker_phone_label }}</label>
+          <input type="tel" id="rev_worker_phone">
+        </div>
+
+        <!-- Section 3: Work Description & Location -->
+        <div class="review-group full-width">
+          <label>{{ t.work_desc_label }}</label>
+          <textarea id="rev_work_description" rows="2"></textarea>
+        </div>
+        <div class="review-group full-width">
+          <label>{{ t.work_loc_label }}</label>
+          <input type="text" id="rev_work_location">
+        </div>
+
+        <!-- Start Date & Duration -->
+        <div class="review-group">
+          <label>{{ t.start_date_label }}</label>
+          <input type="date" id="rev_start_date">
+        </div>
+        <div class="review-group">
+          <label>{{ t.duration_label }}</label>
+          <input type="text" id="rev_duration">
+        </div>
+
+        <!-- Wage & Unit -->
+        <div class="review-group">
+          <label>{{ t.wage_amount_label }}</label>
+          <input type="number" id="rev_wage_amount">
+        </div>
+        <div class="review-group">
+          <label>{{ t.wage_unit_label }}</label>
+          <select id="rev_wage_unit">
+            <option value="per day">{{ t.unit_day }}</option>
+            <option value="per job">{{ t.unit_job }}</option>
+            <option value="per month">{{ t.unit_month }}</option>
+            <option value="per hour">{{ t.unit_hour }}</option>
+            <option value="per sq. ft.">{{ t.unit_sqft }}</option>
+          </select>
+        </div>
+
+        <!-- Payment Schedule & Penalty -->
+        <div class="review-group">
+          <label>{{ t.pay_sched_label }}</label>
+          <select id="rev_payment_schedule">
+            <option value="weekly">{{ t.sched_weekly }}</option>
+            <option value="on completion">{{ t.sched_completion }}</option>
+            <option value="installments">{{ t.sched_installments }}</option>
+            <option value="daily">{{ t.sched_daily }}</option>
+          </select>
+        </div>
+        <div class="review-group">
+          <label>{{ t.late_penalty_label }}</label>
+          <input type="text" id="rev_late_penalty">
+        </div>
+      </div>
+
+      <div class="review-actions">
+        <button type="button" class="btn btn-secondary" id="review-back-btn">✏️ Back to Form</button>
+        <button type="button" class="btn btn-primary" id="review-confirm-btn">📄 Confirm & Generate PDF</button>
+      </div>
     </div>
   </div>
 
@@ -727,41 +813,118 @@
       activeRecognition.start();
     }
 
-    // Controls listeners
+    // Controls and End Call / Skip / Mute Listeners
+    const endBtn = document.getElementById('voice-end-btn');
+    const reviewModal = document.getElementById('review-modal');
+    const reviewBackBtn = document.getElementById('review-back-btn');
+    const reviewConfirmBtn = document.getElementById('review-confirm-btn');
+
+    // Mute/Unmute toggle
     muteBtn.addEventListener('click', () => {
       isMuted = !isMuted;
       if (isMuted) {
-        muteBtn.textContent = `🔊 ${currentLang === 'te' ? 'అన్‌మ్యూట్' : (currentLang === 'hi' ? 'अनम्यूट' : 'Unmute')}`;
+        muteBtn.textContent = "🔇";
         muteBtn.classList.add('muted');
         if (window.speechSynthesis) window.speechSynthesis.cancel();
       } else {
-        muteBtn.textContent = `🔇 ${currentLang === 'te' ? 'మ్యూట్' : (currentLang === 'hi' ? 'म्यूट' : 'Mute')}`;
+        muteBtn.textContent = "🔊";
         muteBtn.classList.remove('muted');
         askQuestion();
       }
     });
 
+    // Skip question
     skipBtn.addEventListener('click', () => {
       stopVoiceActivity();
       questionIndex++;
       askQuestion();
     });
 
-    restartBtn.addEventListener('click', () => {
+    // End Call (X) button - routes to review screen immediately
+    endBtn.addEventListener('click', () => {
       stopVoiceActivity();
-      questionIndex = 0;
-      askQuestion();
+      exitVoiceMode();
+      showReviewScreen();
     });
 
+    // Close on escape key
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && overlay.style.display === 'flex') {
-        exitVoiceMode();
+      if (e.key === 'Escape') {
+        if (overlay.style.display === 'flex') {
+          exitVoiceMode();
+        } else if (reviewModal.style.display === 'flex') {
+          reviewModal.style.display = 'none';
+        }
       }
     });
+
+    // Populate and open Review Modal
+    function showReviewScreen() {
+      // Copy values from the real form inputs to the review modal text fields
+      document.getElementById('rev_owner_name').value = document.getElementById('owner_name').value;
+      document.getElementById('rev_owner_phone').value = document.getElementById('owner_phone').value;
+      document.getElementById('rev_worker_name').value = document.getElementById('worker_name').value;
+      document.getElementById('rev_worker_phone').value = document.getElementById('worker_phone').value;
+      document.getElementById('rev_work_description').value = document.getElementById('work_description').value;
+      document.getElementById('rev_work_location').value = document.getElementById('work_location').value;
+      document.getElementById('rev_start_date').value = document.getElementById('start_date').value;
+      document.getElementById('rev_duration').value = document.getElementById('duration').value;
+      document.getElementById('rev_wage_amount').value = document.getElementById('wage_amount').value;
+      document.getElementById('rev_wage_unit').value = document.getElementById('wage_unit').value;
+      document.getElementById('rev_payment_schedule').value = document.getElementById('payment_schedule').value;
+      document.getElementById('rev_late_penalty').value = document.getElementById('late_penalty').value;
+
+      reviewModal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    }
+
+    // Go back to the main form
+    reviewBackBtn.addEventListener('click', () => {
+      // Sync edited values back to the real form in case they edited here
+      syncReviewToRealForm();
+      reviewModal.style.display = 'none';
+      document.body.style.overflow = '';
+    });
+
+    // Confirm details and generate PDF
+    reviewConfirmBtn.addEventListener('click', () => {
+      syncReviewToRealForm();
+      // Submit the form to generate the PDF
+      document.getElementById('agreementForm').submit();
+    });
+
+    function syncReviewToRealForm() {
+      document.getElementById('owner_name').value = document.getElementById('rev_owner_name').value;
+      document.getElementById('owner_phone').value = document.getElementById('rev_owner_phone').value;
+      document.getElementById('worker_name').value = document.getElementById('rev_worker_name').value;
+      document.getElementById('worker_phone').value = document.getElementById('rev_worker_phone').value;
+      document.getElementById('work_description').value = document.getElementById('rev_work_description').value;
+      document.getElementById('work_location').value = document.getElementById('rev_work_location').value;
+      document.getElementById('start_date').value = document.getElementById('rev_start_date').value;
+      document.getElementById('duration').value = document.getElementById('rev_duration').value;
+      document.getElementById('wage_amount').value = document.getElementById('rev_wage_amount').value;
+      document.getElementById('wage_unit').value = document.getElementById('rev_wage_unit').value;
+      document.getElementById('payment_schedule').value = document.getElementById('rev_payment_schedule').value;
+      document.getElementById('late_penalty').value = document.getElementById('rev_late_penalty').value;
+    }
+
+    // Override original final redirection in askQuestion to directly show the Review Screen
+    const originalAskQuestion = askQuestion;
+    askQuestion = function() {
+      if (questionIndex >= currentQuestions.length) {
+        stopVoiceActivity();
+        exitVoiceMode();
+        showReviewScreen();
+        return;
+      }
+      originalAskQuestion();
+    };
 
     // ─── Automated Mock state rendering for screenshots ────────────────────────
     const urlParams = new URLSearchParams(window.location.search);
     const mockState = urlParams.get('mock_voice_state');
+    const mockReview = urlParams.get('mock_review_state');
+    
     if (mockState) {
       window.speechSynthesis.speak = function(utterance) {
         if (utterance.onend) utterance.onend();
@@ -790,6 +953,23 @@
         setOrbState('processing');
         transcriptPreview.textContent = "✓ Recorded: Rs 1500";
       }
+    }
+
+    if (mockReview) {
+      // Mock review screen populated data
+      document.getElementById('owner_name').value = "Ramesh Verma";
+      document.getElementById('owner_phone').value = "+91 98765 43210";
+      document.getElementById('worker_name').value = "Suresh Ram";
+      document.getElementById('worker_phone').value = "+91 91234 56789";
+      document.getElementById('work_description').value = "Brick masonry, wall plastering work and floor tiles installation.";
+      document.getElementById('work_location').value = "Plot 42, Green Park Enclave, New Delhi";
+      document.getElementById('duration').value = "10 Days";
+      document.getElementById('wage_amount').value = "950";
+      document.getElementById('wage_unit').value = "per day";
+      document.getElementById('payment_schedule').value = "weekly";
+      document.getElementById('late_penalty').value = "Rs. 150 per day late compensation";
+      
+      showReviewScreen();
     }
 
   })();
