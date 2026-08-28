@@ -83,8 +83,17 @@ TRANSLATIONS = {
         "late_penalty_ph": "e.g. Rs. 150 per day late compensation or 2% weekly interest.",
         "late_penalty_hint": "Specify agreed consequences if wages are delayed past scheduled date.",
 
-        "btn_generate": "📄 Generate Legal Wage Agreement (PDF & QR)",
-        "btn_generating_sub": "🔒 Generates a tamper-evident Agreement ID and downloadable PDF.",
+        "btn_generate": "📄 Review & Generate Agreement (PDF & QR)",
+        "btn_generating_sub": "🔒 Opens agreement review & read-aloud summary before finalizing PDF.",
+
+        # Review & Confirm Step
+        "review_modal_title": "📋 Review & Confirm Agreement",
+        "review_modal_sub": "Please verify the plain-language summary and terms below before generating the official legal document.",
+        "review_summary_box_title": "📜 Plain-Language Agreement Summary",
+        "btn_read_aloud": "🔊 Read Summary Aloud",
+        "btn_stop_reading": "⏹ Stop Reading",
+        "btn_edit_details": "✏️ Edit Details",
+        "btn_confirm_generate": "✓ Confirm & Generate Agreement",
 
         # Agreement Page
         "accord_success_title": "Agreement Recorded Successfully!",
@@ -207,8 +216,17 @@ TRANSLATIONS = {
         "late_penalty_ph": "उदा. तय तारीख के बाद ₹150 प्रतिदिन हर्जाना।",
         "late_penalty_hint": "भुगतान में देरी होने पर तय की गई शर्त लिखें।",
 
-        "btn_generate": "📄 कानूनी मजदूरी अनुबंध बनाएं (PDF & QR)",
-        "btn_generating_sub": "🔒 सुरक्षित अनुबंध संख्या और डाउनलोड योग्य PDF प्राप्त करें।",
+        "btn_generate": "📄 अनुबंध की समीक्षा और निर्माण (PDF & QR)",
+        "btn_generating_sub": "🔒 PDF अंतिम रूप देने से पहले अनुबंध का सारांश और बोलकर सुनाने की सुविधा।",
+
+        # Review & Confirm Step
+        "review_modal_title": "📋 अनुबंध की समीक्षा और पुष्टि करें",
+        "review_modal_sub": "आधिकारिक कानूनी दस्तावेज बनाने से पहले नीचे दिए गए सरल सारांश और विवरण की जांच करें।",
+        "review_summary_box_title": "📜 अनुबंध का सरल सारांश",
+        "btn_read_aloud": "🔊 सारांश बोलकर सुनाएं",
+        "btn_stop_reading": "⏹ पढ़ना बंद करें",
+        "btn_edit_details": "✏️ विवरण संपादित करें",
+        "btn_confirm_generate": "✓ पुष्टि करें और अनुबंध बनाएं",
 
         # Agreement Page
         "accord_success_title": "अनुबंध सफलतापूर्वक दर्ज हो गया!",
@@ -331,8 +349,17 @@ TRANSLATIONS = {
         "late_penalty_ph": "ఉదా. గడువు దాటిన తర్వాత రోజుకు ₹150 ఆలస్య పరిహారం.",
         "late_penalty_hint": "చెల్లింపు ఆలస్యమైతే ఒప్పందం చేసుకున్న పరిహార నిబంధన రాయండి.",
 
-        "btn_generate": "📄 చట్టపరమైన ఒప్పంద పత్రం రూపొందించండి (PDF & QR)",
-        "btn_generating_sub": "🔒 భద్రపరచబడిన ఒప్పంద సంఖ్య మరియు డౌన్‌లోడ్ చేయదగిన PDF లభిస్తుంది.",
+        "btn_generate": "📄 ఒప్పందాన్ని సమీక్షించి రూపొందించండి (PDF & QR)",
+        "btn_generating_sub": "🔒 అధికారిక పత్రాన్ని రూపొందించే ముందు సారాంశం మరియు వినే సదుపాయం.",
+
+        # Review & Confirm Step
+        "review_modal_title": "📋 ఒప్పందాన్ని సమీక్షించి నిర్ధారించండి",
+        "review_modal_sub": "అధికారిక చట్టపరమైన పత్రాన్ని రూపొందించే ముందు దిగువ సారాంశం మరియు వివరాలను సరిచూసుకోండి.",
+        "review_summary_box_title": "📜 ఒప్పందం యొక్క సరళ సారాంశం",
+        "btn_read_aloud": "🔊 సారాంశాన్ని వినండి",
+        "btn_stop_reading": "⏹ ఆపండి",
+        "btn_edit_details": "✏️ వివరాలను సవరించండి",
+        "btn_confirm_generate": "✓ నిర్ధారించి ఒప్పందాన్ని రూపొందించండి",
 
         # Agreement Page
         "accord_success_title": "ఒప్పందం విజయవంతంగా నమోదైంది!",

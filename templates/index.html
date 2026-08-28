@@ -86,8 +86,25 @@
   <!-- Conversational Review Modal -->
   <div id="review-modal" class="review-modal" {% if request.args.get('mock_review_state') %}style="display: flex;"{% endif %}>
     <div class="review-modal-content">
-      <h2 class="review-title">📋 {{ t.summary_title }}</h2>
-      <p class="review-subtitle">Please verify and edit the collected information before finalizing the contract.</p>
+      <div class="review-header-badge">📋 WAGE ACCORD REVIEW</div>
+      <h2 class="review-title">{{ t.review_modal_title }}</h2>
+      <p class="review-subtitle">{{ t.review_modal_sub }}</p>
+      
+      <!-- Highlighted Plain-Language Summary Box with Read Aloud -->
+      <div class="review-summary-card">
+        <div class="review-summary-header">
+          <span class="review-summary-title">{{ t.review_summary_box_title }}</span>
+          <button type="button" id="read-summary-btn" class="btn-read-aloud" aria-label="{{ t.btn_read_aloud }}">
+            <span id="read-summary-icon">🔊</span>
+            <span id="read-summary-text">{{ t.btn_read_aloud }}</span>
+          </button>
+        </div>
+        <div id="plain-language-summary-text" class="plain-language-summary-text">
+          <!-- Populated dynamically by generatePlainSummary() -->
+        </div>
+      </div>
+
+      <h3 class="review-fields-heading">✏️ Verify & Edit Details:</h3>
       
       <div class="review-grid">
         <!-- Section 1: Owner -->
@@ -163,8 +180,8 @@
       </div>
 
       <div class="review-actions">
-        <button type="button" class="btn btn-secondary" id="review-back-btn">✏️ Back to Form</button>
-        <button type="button" class="btn btn-primary" id="review-confirm-btn">📄 Confirm & Generate PDF</button>
+        <button type="button" class="btn btn-secondary" id="review-back-btn">{{ t.btn_edit_details }}</button>
+        <button type="button" class="btn btn-primary" id="review-confirm-btn">{{ t.btn_confirm_generate }}</button>
       </div>
     </div>
   </div>
@@ -735,6 +752,179 @@
       return total > 0 ? String(total) : null;
     }
 
+    // ─── Review & Confirm Modal Logic ──────────────────────────────────────────
+    const reviewModal = document.getElementById('review-modal');
+    const reviewBackBtn = document.getElementById('review-back-btn');
+    const reviewConfirmBtn = document.getElementById('review-confirm-btn');
+    const readSummaryBtn = document.getElementById('read-summary-btn');
+    const readSummaryIcon = document.getElementById('read-summary-icon');
+    const readSummaryText = document.getElementById('read-summary-text');
+    let isReadingSummary = false;
+    let isConfirmedSubmission = false;
+
+    function generatePlainSummary() {
+      const owner = document.getElementById('rev_owner_name').value.trim() || '—';
+      const worker = document.getElementById('rev_worker_name').value.trim() || '—';
+      const work = document.getElementById('rev_work_description').value.trim() || '—';
+      const wage = document.getElementById('rev_wage_amount').value.trim() || '—';
+      const unit = document.getElementById('rev_wage_unit').value || 'per day';
+      const sched = document.getElementById('rev_payment_schedule').value || 'weekly';
+      const penalty = document.getElementById('rev_late_penalty').value.trim() || 'None specified';
+      const location = document.getElementById('rev_work_location').value.trim() || '—';
+      const duration = document.getElementById('rev_duration').value.trim() || '—';
+      const startDate = document.getElementById('rev_start_date').value || '—';
+
+      let text = '';
+      if (currentLang === 'hi') {
+        text = `मालिक: ${owner}, कारीगर/श्रमिक: ${worker} को "${work}" के कार्य के लिए नियुक्त कर रहे हैं। तय मजदूरी: ₹${wage} (${unit}), भुगतान: ${sched} होगा। भुगतान में देरी पर हर्जाना: ${penalty}। कार्य का स्थान: ${location}। काम की अवधि: ${duration}, प्रारंभ तिथि: ${startDate}।`;
+      } else if (currentLang === 'te') {
+        text = `యజమాని: ${owner}, కార్మికుడు: ${worker} ను "${work}" పని కోసం నియమిస్తున్నారు. వేతనం: ₹${wage} (${unit}), చెల్లింపు: ${sched}. ఆలస్య చెల్లింపు జరిమానా: ${penalty}. పని ప్రదేశం: ${location}. పని వ్యవధి: ${duration}, ప్రారంభ తేదీ: ${startDate}.`;
+      } else {
+        text = `Owner: ${owner} will employ Worker: ${worker} for "${work}". Agreed Wage: ₹${wage} ${unit}, paid ${sched}. Penalty for late payment: ${penalty}. Work location: ${location}. Duration: ${duration} starting ${startDate}.`;
+      }
+
+      const summaryContainer = document.getElementById('plain-language-summary-text');
+      if (summaryContainer) {
+        summaryContainer.textContent = text;
+      }
+      return text;
+    }
+
+    function stopSummaryTTS() {
+      if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+      isReadingSummary = false;
+      if (readSummaryBtn) {
+        readSummaryBtn.classList.remove('speaking');
+        if (readSummaryIcon) readSummaryIcon.textContent = '🔊';
+        if (readSummaryText) {
+          readSummaryText.textContent = currentLang === 'hi' ? 'सारांश बोलकर सुनाएं' : (currentLang === 'te' ? 'సారాంశాన్ని వినండి' : 'Read Summary Aloud');
+        }
+      }
+    }
+
+    function toggleSummaryTTS() {
+      if (isReadingSummary) {
+        stopSummaryTTS();
+        return;
+      }
+
+      if (!('speechSynthesis' in window)) {
+        alert('Text-to-Speech is not supported on this browser.');
+        return;
+      }
+
+      window.speechSynthesis.cancel();
+      const textToRead = generatePlainSummary();
+      const utterance = new SpeechSynthesisUtterance(textToRead);
+      
+      const langCodeMap = { 'en': 'en-IN', 'hi': 'hi-IN', 'te': 'te-IN' };
+      utterance.lang = langCodeMap[currentLang] || 'en-IN';
+      utterance.rate = 0.95;
+
+      utterance.onstart = () => {
+        isReadingSummary = true;
+        if (readSummaryBtn) readSummaryBtn.classList.add('speaking');
+        if (readSummaryIcon) readSummaryIcon.textContent = '⏹';
+        if (readSummaryText) {
+          readSummaryText.textContent = currentLang === 'hi' ? 'पढ़ना बंद करें' : (currentLang === 'te' ? 'ఆపండి' : 'Stop Reading');
+        }
+      };
+
+      utterance.onend = () => {
+        stopSummaryTTS();
+      };
+
+      utterance.onerror = () => {
+        stopSummaryTTS();
+      };
+
+      window.speechSynthesis.speak(utterance);
+    }
+
+    if (readSummaryBtn) {
+      readSummaryBtn.addEventListener('click', toggleSummaryTTS);
+    }
+
+    // Attach real-time input event listeners to all review inputs so the summary updates live
+    const reviewInputs = document.querySelectorAll('#review-modal input, #review-modal select, #review-modal textarea');
+    reviewInputs.forEach(input => {
+      input.addEventListener('input', () => {
+        generatePlainSummary();
+        if (isReadingSummary) {
+          stopSummaryTTS();
+        }
+      });
+    });
+
+    // Populate and open Review Modal
+    function showReviewScreen() {
+      stopSummaryTTS();
+      // Copy values from the real form inputs to the review modal text fields
+      document.getElementById('rev_owner_name').value = document.getElementById('owner_name').value;
+      document.getElementById('rev_owner_phone').value = document.getElementById('owner_phone').value;
+      document.getElementById('rev_worker_name').value = document.getElementById('worker_name').value;
+      document.getElementById('rev_worker_phone').value = document.getElementById('worker_phone').value;
+      document.getElementById('rev_work_description').value = document.getElementById('work_description').value;
+      document.getElementById('rev_work_location').value = document.getElementById('work_location').value;
+      document.getElementById('rev_start_date').value = document.getElementById('start_date').value;
+      document.getElementById('rev_duration').value = document.getElementById('duration').value;
+      document.getElementById('rev_wage_amount').value = document.getElementById('wage_amount').value;
+      document.getElementById('rev_wage_unit').value = document.getElementById('wage_unit').value;
+      document.getElementById('rev_payment_schedule').value = document.getElementById('payment_schedule').value;
+      document.getElementById('rev_late_penalty').value = document.getElementById('late_penalty').value;
+
+      generatePlainSummary();
+
+      reviewModal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    }
+
+    // Intercept main form submission to require Review & Confirm step
+    const agreementForm = document.getElementById('agreementForm');
+    agreementForm.addEventListener('submit', (e) => {
+      if (!isConfirmedSubmission) {
+        e.preventDefault();
+        if (!agreementForm.checkValidity()) {
+          agreementForm.reportValidity();
+          return;
+        }
+        showReviewScreen();
+      }
+    });
+
+    // Go back to the main form to edit
+    reviewBackBtn.addEventListener('click', () => {
+      stopSummaryTTS();
+      syncReviewToRealForm();
+      reviewModal.style.display = 'none';
+      document.body.style.overflow = '';
+    });
+
+    // Confirm details and generate PDF
+    reviewConfirmBtn.addEventListener('click', () => {
+      stopSummaryTTS();
+      syncReviewToRealForm();
+      isConfirmedSubmission = true;
+      agreementForm.submit();
+    });
+
+    function syncReviewToRealForm() {
+      document.getElementById('owner_name').value = document.getElementById('rev_owner_name').value;
+      document.getElementById('owner_phone').value = document.getElementById('rev_owner_phone').value;
+      document.getElementById('worker_name').value = document.getElementById('rev_worker_name').value;
+      document.getElementById('worker_phone').value = document.getElementById('rev_worker_phone').value;
+      document.getElementById('work_description').value = document.getElementById('rev_work_description').value;
+      document.getElementById('work_location').value = document.getElementById('rev_work_location').value;
+      document.getElementById('start_date').value = document.getElementById('rev_start_date').value;
+      document.getElementById('duration').value = document.getElementById('rev_duration').value;
+      document.getElementById('wage_amount').value = document.getElementById('rev_wage_amount').value;
+      document.getElementById('wage_unit').value = document.getElementById('rev_wage_unit').value;
+      document.getElementById('payment_schedule').value = document.getElementById('rev_payment_schedule').value;
+      document.getElementById('late_penalty').value = document.getElementById('rev_late_penalty').value;
+    }
+
     // Input date parser
     function parseSpokenDate(text) {
       const clean = text.toLowerCase().trim();
@@ -848,9 +1038,6 @@
 
     // Controls and End Call / Skip / Mute Listeners
     const endBtn = document.getElementById('voice-end-btn');
-    const reviewModal = document.getElementById('review-modal');
-    const reviewBackBtn = document.getElementById('review-back-btn');
-    const reviewConfirmBtn = document.getElementById('review-confirm-btn');
 
     // Mute/Unmute toggle
     muteBtn.addEventListener('click', () => {
@@ -891,67 +1078,7 @@
       }
     });
 
-    // Populate and open Review Modal
-    function showReviewScreen() {
-      // Copy values from the real form inputs to the review modal text fields
-      document.getElementById('rev_owner_name').value = document.getElementById('owner_name').value;
-      document.getElementById('rev_owner_phone').value = document.getElementById('owner_phone').value;
-      document.getElementById('rev_worker_name').value = document.getElementById('worker_name').value;
-      document.getElementById('rev_worker_phone').value = document.getElementById('worker_phone').value;
-      document.getElementById('rev_work_description').value = document.getElementById('work_description').value;
-      document.getElementById('rev_work_location').value = document.getElementById('work_location').value;
-      document.getElementById('rev_start_date').value = document.getElementById('start_date').value;
-      document.getElementById('rev_duration').value = document.getElementById('duration').value;
-      document.getElementById('rev_wage_amount').value = document.getElementById('wage_amount').value;
-      document.getElementById('rev_wage_unit').value = document.getElementById('wage_unit').value;
-      document.getElementById('rev_payment_schedule').value = document.getElementById('payment_schedule').value;
-      document.getElementById('rev_late_penalty').value = document.getElementById('late_penalty').value;
 
-      reviewModal.style.display = 'flex';
-      document.body.style.overflow = 'hidden';
-    }
-
-    // Go back to the main form
-    reviewBackBtn.addEventListener('click', () => {
-      // Sync edited values back to the real form in case they edited here
-      syncReviewToRealForm();
-      reviewModal.style.display = 'none';
-      document.body.style.overflow = '';
-    });
-
-    // Confirm details and generate PDF
-    reviewConfirmBtn.addEventListener('click', () => {
-      syncReviewToRealForm();
-      // Submit the form to generate the PDF
-      document.getElementById('agreementForm').submit();
-    });
-
-    function syncReviewToRealForm() {
-      document.getElementById('owner_name').value = document.getElementById('rev_owner_name').value;
-      document.getElementById('owner_phone').value = document.getElementById('rev_owner_phone').value;
-      document.getElementById('worker_name').value = document.getElementById('rev_worker_name').value;
-      document.getElementById('worker_phone').value = document.getElementById('rev_worker_phone').value;
-      document.getElementById('work_description').value = document.getElementById('rev_work_description').value;
-      document.getElementById('work_location').value = document.getElementById('rev_work_location').value;
-      document.getElementById('start_date').value = document.getElementById('rev_start_date').value;
-      document.getElementById('duration').value = document.getElementById('rev_duration').value;
-      document.getElementById('wage_amount').value = document.getElementById('rev_wage_amount').value;
-      document.getElementById('wage_unit').value = document.getElementById('rev_wage_unit').value;
-      document.getElementById('payment_schedule').value = document.getElementById('rev_payment_schedule').value;
-      document.getElementById('late_penalty').value = document.getElementById('rev_late_penalty').value;
-    }
-
-    // Override original final redirection in askQuestion to directly show the Review Screen
-    const originalAskQuestion = askQuestion;
-    askQuestion = function() {
-      if (questionIndex >= currentQuestions.length) {
-        stopVoiceActivity();
-        exitVoiceMode();
-        showReviewScreen();
-        return;
-      }
-      originalAskQuestion();
-    };
 
     // ─── Automated Mock state rendering for screenshots ────────────────────────
     const urlParams = new URLSearchParams(window.location.search);
