@@ -11,12 +11,53 @@
     {{ t.why_text }}
   </div>
 
-  <!-- Quick Fill Helpers -->
-  <div style="margin-bottom: 20px; padding: 14px; background: #f1f5f9; border: 2px solid #cbd5e1; border-radius: 8px; font-size: 15px;">
-    <strong style="color: #0f172a;">{{ t.quick_fill }}</strong>
-    <button type="button" onclick="fillSample('mason')" class="preset-btn">{{ t.preset_mason }}</button>
-    <button type="button" onclick="fillSample('painting')" class="preset-btn">{{ t.preset_paint }}</button>
-    <button type="button" onclick="fillSample('carpentry')" class="preset-btn">{{ t.preset_carpenter }}</button>
+  <!-- Quick Fill Helpers & Conversational Voice Mode Button -->
+  <div style="margin-bottom: 20px; padding: 16px; background: #f1f5f9; border: 2px solid #cbd5e1; border-radius: 8px; font-size: 15px; display: flex; flex-direction: column; gap: 12px;">
+    <div>
+      <strong style="color: #0f172a; display: block; margin-bottom: 6px;">{{ t.quick_fill }}</strong>
+      <button type="button" onclick="fillSample('mason')" class="preset-btn">{{ t.preset_mason }}</button>
+      <button type="button" onclick="fillSample('painting')" class="preset-btn">{{ t.preset_paint }}</button>
+      <button type="button" onclick="fillSample('carpentry')" class="preset-btn">{{ t.preset_carpenter }}</button>
+    </div>
+    <div style="border-top: 1px solid #cbd5e1; padding-top: 12px; margin-top: 4px;">
+      <button type="button" id="start-voice-mode-btn" class="btn btn-primary" style="background: #1e3a8a; border-color: #1e3a8a; font-weight: 700; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 17px; padding: 12px;">
+        <span>🎙️ {{ t.btn_voice_mode }}</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Conversational Full-Screen voice assistant mode -->
+  <div id="voice-overlay" class="voice-overlay" {% if request.args.get('mock_voice_state') %}style="display: flex;"{% endif %}>
+    <div class="voice-overlay-header">
+      <div class="voice-title-badge">
+        <span class="voice-status-dot"></span>
+        <span id="voice-badge-text">Sahayak Voice Assistant</span>
+      </div>
+      <button type="button" class="voice-exit-btn" id="voice-exit-btn">{{ t.voice_btn_exit }}</button>
+    </div>
+
+    <div class="voice-orb-container">
+      <!-- Animated Orb in center -->
+      <div class="voice-orb" id="voice-orb">
+        <div class="orb-ring"></div>
+      </div>
+      
+      <!-- State label (SPEAK NOW, SPEAKING, PROCESSING) -->
+      <div id="voice-indicator-text" class="voice-indicator-text">SPEAK NOW</div>
+      
+      <div style="margin-top: 15px; width: 100%; text-align: center;">
+        <div class="voice-question-title" id="voice-question-title">QUESTION 1 of 12</div>
+        <div class="voice-question-text" id="voice-question-text">Please tell me the owner's name.</div>
+        <div class="voice-transcript-preview" id="voice-transcript-preview"></div>
+      </div>
+    </div>
+
+    <!-- Controls footer -->
+    <div class="voice-controls-footer">
+      <button type="button" class="voice-action-btn" id="voice-mute-btn">🔇 {{ t.voice_btn_mute }}</button>
+      <button type="button" class="voice-action-btn" id="voice-restart-btn">🔄 {{ t.voice_btn_restart }}</button>
+      <button type="button" class="voice-action-btn primary" id="voice-skip-btn">{{ t.voice_btn_skip }} ➡️</button>
+    </div>
   </div>
 
   <form action="{{ url_for('create') }}" method="POST" id="agreementForm">
@@ -33,7 +74,10 @@
             {{ t.owner_name_label }} <span class="req-star">*</span>
             <span class="label-sub">{{ t.owner_name_sub }}</span>
           </label>
-          <input type="text" id="owner_name" name="owner_name" placeholder="{{ t.owner_name_ph }}" required>
+          <div class="voice-input-wrapper">
+            <input type="text" id="owner_name" name="owner_name" placeholder="{{ t.owner_name_ph }}" required>
+            <button type="button" class="mic-btn" data-target="owner_name" data-mode="text" title="Speak owner name" aria-label="Voice input for owner name">🎤</button>
+          </div>
         </div>
 
         <div class="form-group">
@@ -41,7 +85,10 @@
             {{ t.owner_phone_label }} <span class="req-star">*</span>
             <span class="label-sub">{{ t.owner_phone_sub }}</span>
           </label>
-          <input type="tel" id="owner_phone" name="owner_phone" placeholder="{{ t.owner_phone_ph }}" required>
+          <div class="voice-input-wrapper">
+            <input type="tel" id="owner_phone" name="owner_phone" placeholder="{{ t.owner_phone_ph }}" required>
+            <button type="button" class="mic-btn" data-target="owner_phone" data-mode="phone" title="Speak phone number" aria-label="Voice input for owner phone">🎤</button>
+          </div>
         </div>
       </div>
     </div>
@@ -58,7 +105,10 @@
             {{ t.worker_name_label }} <span class="req-star">*</span>
             <span class="label-sub">{{ t.worker_name_sub }}</span>
           </label>
-          <input type="text" id="worker_name" name="worker_name" placeholder="{{ t.worker_name_ph }}" required>
+          <div class="voice-input-wrapper">
+            <input type="text" id="worker_name" name="worker_name" placeholder="{{ t.worker_name_ph }}" required>
+            <button type="button" class="mic-btn" data-target="worker_name" data-mode="text" title="Speak worker name" aria-label="Voice input for worker name">🎤</button>
+          </div>
         </div>
 
         <div class="form-group">
@@ -66,7 +116,10 @@
             {{ t.worker_phone_label }} <span class="req-star">*</span>
             <span class="label-sub">{{ t.worker_phone_sub }}</span>
           </label>
-          <input type="tel" id="worker_phone" name="worker_phone" placeholder="{{ t.worker_phone_ph }}" required>
+          <div class="voice-input-wrapper">
+            <input type="tel" id="worker_phone" name="worker_phone" placeholder="{{ t.worker_phone_ph }}" required>
+            <button type="button" class="mic-btn" data-target="worker_phone" data-mode="phone" title="Speak worker phone" aria-label="Voice input for worker phone">🎤</button>
+          </div>
         </div>
       </div>
     </div>
@@ -82,7 +135,10 @@
           {{ t.work_desc_label }} <span class="req-star">*</span>
           <span class="label-sub">{{ t.work_desc_sub }}</span>
         </label>
-        <textarea id="work_description" name="work_description" rows="3" placeholder="{{ t.work_desc_ph }}" required></textarea>
+        <div class="voice-input-wrapper" style="align-items: flex-start;">
+          <textarea id="work_description" name="work_description" rows="3" placeholder="{{ t.work_desc_ph }}" required></textarea>
+          <button type="button" class="mic-btn" data-target="work_description" data-mode="text" title="Speak work description" aria-label="Voice input for work description" style="margin-top: 4px;">🎤</button>
+        </div>
         <div class="input-hint">{{ t.work_desc_hint }}</div>
       </div>
 
@@ -91,7 +147,10 @@
           {{ t.work_loc_label }} <span class="req-star">*</span>
           <span class="label-sub">{{ t.work_loc_sub }}</span>
         </label>
-        <input type="text" id="work_location" name="work_location" placeholder="{{ t.work_loc_ph }}" required>
+        <div class="voice-input-wrapper">
+          <input type="text" id="work_location" name="work_location" placeholder="{{ t.work_loc_ph }}" required>
+          <button type="button" class="mic-btn" data-target="work_location" data-mode="text" title="Speak work location" aria-label="Voice input for work location">🎤</button>
+        </div>
       </div>
 
       <div class="form-row">
@@ -108,7 +167,10 @@
             {{ t.duration_label }} <span class="req-star">*</span>
             <span class="label-sub">{{ t.duration_sub }}</span>
           </label>
-          <input type="text" id="duration" name="duration" placeholder="{{ t.duration_ph }}" required>
+          <div class="voice-input-wrapper">
+            <input type="text" id="duration" name="duration" placeholder="{{ t.duration_ph }}" required>
+            <button type="button" class="mic-btn" data-target="duration" data-mode="text" title="Speak duration" aria-label="Voice input for duration">🎤</button>
+          </div>
         </div>
       </div>
     </div>
@@ -125,7 +187,10 @@
             {{ t.wage_amount_label }} <span class="req-star">*</span>
             <span class="label-sub">{{ t.wage_amount_sub }}</span>
           </label>
-          <input type="number" id="wage_amount" name="wage_amount" step="any" min="1" placeholder="{{ t.wage_amount_ph }}" required>
+          <div class="voice-input-wrapper">
+            <input type="number" id="wage_amount" name="wage_amount" step="any" min="1" placeholder="{{ t.wage_amount_ph }}" required>
+            <button type="button" class="mic-btn" data-target="wage_amount" data-mode="number" title="Speak wage amount" aria-label="Voice input for wage amount">🎤</button>
+          </div>
         </div>
 
         <div class="form-group">
@@ -161,7 +226,10 @@
           {{ t.late_penalty_label }}
           <span class="label-sub">{{ t.late_penalty_sub }}</span>
         </label>
-        <input type="text" id="late_penalty" name="late_penalty" placeholder="{{ t.late_penalty_ph }}">
+        <div class="voice-input-wrapper">
+          <input type="text" id="late_penalty" name="late_penalty" placeholder="{{ t.late_penalty_ph }}">
+          <button type="button" class="mic-btn" data-target="late_penalty" data-mode="text" title="Speak penalty clause" aria-label="Voice input for late penalty">🎤</button>
+        </div>
         <div class="input-hint">{{ t.late_penalty_hint }}</div>
       </div>
     </div>
@@ -180,11 +248,12 @@
 </div>
 
 <script>
-  // Set default date to today
+  // ─── Date default ────────────────────────────────────────────────────────────
   document.getElementById('start_date').value = new Date().toISOString().split('T')[0];
 
   const currentLang = "{{ current_lang }}";
 
+  // ─── Quick Fill presets (unchanged) ──────────────────────────────────────────
   function fillSample(type) {
     if (currentLang === 'te') {
       if (type === 'mason') {
@@ -242,7 +311,7 @@
         document.getElementById('owner_phone').value = '+91 98111 22334';
         document.getElementById('worker_name').value = 'मुकेश कुमार पेंटर';
         document.getElementById('worker_phone').value = '+91 98222 33445';
-        document.getElementById('work_description').value = '3BHK फ्लैट की पूरी पुताई, प्राइमर और डबल-कोट पेंटिंग।';
+        document.getElementById('work_description').value = '3BHK फ्लैट की पूरी पुताई, प्राइमर और double-coat पेंटिंग।';
         document.getElementById('work_location').value = 'फ्लैट 402, शांति हाइट्स, नोएडा';
         document.getElementById('duration').value = '7 दिन';
         document.getElementById('wage_amount').value = '18500';
@@ -303,5 +372,426 @@
       }
     }
   }
+
+  // ─── Conversational Voice Interface ──────────────────────────────────────────
+  (function () {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    
+    // Voice Questions configurations for English, Hindi, and Telugu
+    const VOICE_QUESTIONS = {
+      en: [
+        { label: "Owner Full Name", query: "Please say the owner or contractor's full name.", targetId: "owner_name", mode: "text" },
+        { label: "Owner Phone Number", query: "What is the owner's phone number?", targetId: "owner_phone", mode: "phone" },
+        { label: "Worker Full Name", query: "Please say the worker's full name.", targetId: "worker_name", mode: "text" },
+        { label: "Worker Phone Number", query: "What is the worker's phone number?", targetId: "worker_phone", mode: "phone" },
+        { label: "Description of Work", query: "Please describe the work to be performed. For example: brick masonry, painting, or carpentry.", targetId: "work_description", mode: "text" },
+        { label: "Wage Amount", query: "What is the agreed wage amount in rupees? Speak the number.", targetId: "wage_amount", mode: "number" },
+        { 
+          label: "Wage Unit", 
+          query: "Is the wage per day, per job, per month, per hour, or per square foot?", 
+          targetId: "wage_unit", 
+          mode: "select",
+          optionsMap: { "day": "per day", "job": "per job", "month": "per month", "hour": "per hour", "square": "per sq. ft.", "sq": "per sq. ft." } 
+        },
+        { 
+          label: "Payment Schedule", 
+          query: "What is the payment schedule? You can say weekly, daily, on completion, or installments.", 
+          targetId: "payment_schedule", 
+          mode: "select",
+          optionsMap: { "week": "weekly", "complete": "on completion", "finish": "on completion", "installment": "installments", "day": "daily" } 
+        },
+        { label: "Late Payment Penalty", query: "What is the penalty for late payment? Speak the terms, or say none if there is no penalty.", targetId: "late_penalty", mode: "text" },
+        { label: "Start Date", query: "What is the start date for the work? For example, today, tomorrow, or a specific date.", targetId: "start_date", mode: "date" },
+        { label: "Estimated Duration", query: "What is the estimated duration of the work? For example: ten days or two weeks.", targetId: "duration", mode: "text" },
+        { label: "Work Location", query: "Where is the work location or address?", targetId: "work_location", mode: "text" }
+      ],
+      hi: [
+        { label: "मालिक का नाम", query: "कृपया मालिक या ठेकेदार का पूरा नाम बताइए।", targetId: "owner_name", mode: "text" },
+        { label: "मालिक का फोन नंबर", query: "मालिक का फोन नंबर क्या है?", targetId: "owner_phone", mode: "phone" },
+        { label: "श्रमिक का नाम", query: "कृपया काम करने वाले श्रमिक का पूरा नाम बताइए।", targetId: "worker_name", mode: "text" },
+        { label: "श्रमिक का फोन नंबर", query: "श्रमिक का फोन नंबर क्या है?", targetId: "worker_phone", mode: "phone" },
+        { label: "काम का विवरण", query: "काम का विवरण बताइए। जैसे की चिनाई का काम, पुताई का काम, या बढ़ई का काम।", targetId: "work_description", mode: "text" },
+        { label: "मजदूरी राशि", query: "तय की गई मजदूरी राशि रुपयों में बताइए। संख्या बोलिए।", targetId: "wage_amount", mode: "number" },
+        { 
+          label: "मजदूरी इकाई", 
+          query: "यह मजदूरी प्रति दिन है, प्रति काम है, प्रति माह है, प्रति घंटा है या प्रति वर्ग फुट है?", 
+          targetId: "wage_unit", 
+          mode: "select",
+          optionsMap: { "दिन": "per day", "रोज": "per day", "काम": "per job", "ठेका": "per job", "महीना": "per month", "माह": "per month", "घंटा": "per hour", "वर्ग": "per sq. ft.", "फुट": "per sq. ft." } 
+        },
+        { 
+          label: "भुगतान समय", 
+          query: "भुगतान कब किया जाएगा? आप कह सकते हैं: साप्ताहिक, काम पूरा होने पर, किस्तों में, या रोजाना।", 
+          targetId: "payment_schedule", 
+          mode: "select",
+          optionsMap: { "हफ्ते": "weekly", "साप्ताहिक": "weekly", "पूरा": "on completion", "किस्त": "installments", "रोज": "daily" } 
+        },
+        { label: "देरी का हर्जाना", query: "भुगतान में देरी होने पर क्या हर्जाना लगेगा? हर्जाने की शर्त बोलिए, या कहें कोई नहीं।", targetId: "late_penalty", mode: "text" },
+        { label: "काम शुरू होने की तारीख", query: "काम किस तारीख से शुरू होगा? जैसे आज से, कल से, या कोई तारीख बोलें।", targetId: "start_date", mode: "date" },
+        { label: "काम की अवधि", query: "काम पूरा होने में कितना समय लगेगा? जैसे दस दिन या दो हफ्ते।", targetId: "duration", mode: "text" },
+        { label: "काम का स्थान", query: "काम की जगह या पता क्या है?", targetId: "work_location", mode: "text" }
+      ],
+      te: [
+        { label: "యజమాని పేరు", query: "దయచేసి యజమాని లేదా కాంట్రాక్టర్ పూర్తి పేరు చెప్పండి.", targetId: "owner_name", mode: "text" },
+        { label: "యజమాని ఫోన్ నంబర్", query: "యజమాని ఫోన్ నంబర్ ఎంత?", targetId: "owner_phone", mode: "phone" },
+        { label: "కార్మికుడి పేరు", query: "దయచేసి పని చేసే కార్మికుడి పూర్తి పేరు చెప్పండి.", targetId: "worker_name", mode: "text" },
+        { label: "కార్మికుడి ఫోన్ నంబర్", query: "కార్మికుడి ఫోన్ నంబర్ ఎంత?", targetId: "worker_phone", mode: "phone" },
+        { label: "పని వివరాలు", query: "చేయవలసిన పని వివరాలు చెప్పండి. ఉదాహరణకు మేస్త్రీ పని, రంగులు వేసే పని లేదా వడ్రంగి పని.", targetId: "work_description", mode: "text" },
+        { label: "కూలీ మొత్తం", query: "ఒప్పుకున్న కూలీ మొత్తం రూపాయలలో చెప్పండి. కేవలం నంబర్ చెప్పండి.", targetId: "wage_amount", mode: "number" },
+        { 
+          label: "కూలీ లెక్క", 
+          query: "ఈ కూలీ రోజుకా, మొత్తం పనికా, నెలకా, గంటకా, లేదా చదరపు అడుగుకా?", 
+          targetId: "wage_unit", 
+          mode: "select",
+          optionsMap: { "రోజు": "per day", "మొత్తం": "per job", "పని": "per job", "నెల": "per month", "గంట": "per hour", "చదరపు": "per sq. ft." } 
+        },
+        { 
+          label: "చెల్లింపు సమయం", 
+          query: "కూలీ ఎప్పుడు చెల్లిస్తారు? వారానికా, పని పూర్తయిన తర్వాతనా, విడతలవారీగానా, లేదా రోజువారీనా?", 
+          targetId: "payment_schedule", 
+          mode: "select",
+          optionsMap: { "వారం": "weekly", "పూర్తి": "on completion", "విడత": "installments", "రోజు": "daily" } 
+        },
+        { label: "ఆలస్య పరిహారం", query: "ఆలస్య పరిహారం ఏదైనా ఉందా? ఉంటే చెప్పండి, లేకపోతే లేదు అని చెప్పండి.", targetId: "late_penalty", mode: "text" },
+        { label: "పని ప్రారంభ తేదీ", query: "పని ఏ తేదీన ప్రారంభమవుతుంది? ఉదాహరణకు ఈ రోజు, రేపు, లేదా ఒక నిర్దిష్ట తేదీ చెప్పండి.", targetId: "start_date", mode: "date" },
+        { label: "పని సమయం", query: "పని పూర్తి కావడానికి ఎంత సమయం పడుతుంది? ఉదాహరణకు పది రోజులు లేదా రెండు వారాలు.", targetId: "duration", mode: "text" },
+        { label: "పని స్థలం", query: "పని ఎక్కడ జరుగుతుంది? ఆ స్థలం లేదా చిరునామా చెప్పండి.", targetId: "work_location", mode: "text" }
+      ]
+    };
+
+    // UI Nodes
+    const overlay = document.getElementById('voice-overlay');
+    const orb = document.getElementById('voice-orb');
+    const startBtn = document.getElementById('start-voice-mode-btn');
+    const exitBtn = document.getElementById('voice-exit-btn');
+    const muteBtn = document.getElementById('voice-mute-btn');
+    const restartBtn = document.getElementById('voice-restart-btn');
+    const skipBtn = document.getElementById('voice-skip-btn');
+    const indicatorText = document.getElementById('voice-indicator-text');
+    const qTitle = document.getElementById('voice-question-title');
+    const qText = document.getElementById('voice-question-text');
+    const transcriptPreview = document.getElementById('voice-transcript-preview');
+
+    let currentQuestions = VOICE_QUESTIONS[currentLang] || VOICE_QUESTIONS.en;
+    let questionIndex = 0;
+    let isMuted = false;
+    let activeRecognition = null;
+    let activeUtterance = null;
+    let nextStepTimeout = null;
+
+    // Speech locales map
+    const langLocales = { en: { speech: 'en-IN', synthesis: 'en-IN' }, hi: { speech: 'hi-IN', synthesis: 'hi-IN' }, te: { speech: 'te-IN', synthesis: 'te-IN' } };
+    const activeLocale = langLocales[currentLang] || langLocales.en;
+
+    if (!SpeechRecognition) {
+      startBtn.style.display = 'none';
+      return;
+    }
+
+    // Launch overlay
+    startBtn.addEventListener('click', () => {
+      currentQuestions = VOICE_QUESTIONS[currentLang] || VOICE_QUESTIONS.en;
+      questionIndex = 0;
+      overlay.style.display = 'flex';
+      document.body.style.overflow = 'hidden'; 
+      askQuestion();
+    });
+
+    // Exit Voice Mode
+    function exitVoiceMode() {
+      stopVoiceActivity();
+      overlay.style.display = 'none';
+      document.body.style.overflow = '';
+      document.querySelectorAll('.voice-active-field').forEach(f => f.classList.remove('voice-active-field'));
+    }
+    
+    exitBtn.addEventListener('click', exitVoiceMode);
+
+    // Stop TTS and speech recognition
+    function stopVoiceActivity() {
+      if (nextStepTimeout) { clearTimeout(nextStepTimeout); nextStepTimeout = null; }
+      if (activeRecognition) {
+        activeRecognition.onend = null;
+        activeRecognition.onerror = null;
+        try { activeRecognition.stop(); } catch(e) {}
+        activeRecognition = null;
+      }
+      if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+      activeUtterance = null;
+    }
+
+    // Change orb state indication
+    function setOrbState(state) {
+      orb.className = 'voice-orb';
+      if (state === 'speaking') {
+        orb.classList.add('speaking');
+        indicatorText.textContent = currentLang === 'te' ? 'వాయిస్ అసిస్టెంట్ మాట్లాడుతోంది...' : (currentLang === 'hi' ? 'सहायक बोल रहा है...' : 'ASSISTANT SPEAKING');
+        indicatorText.style.color = '#fbbf24';
+      } else if (state === 'listening') {
+        orb.classList.add('listening');
+        indicatorText.textContent = currentLang === 'te' ? 'వింటోంది... చెప్పండి' : (currentLang === 'hi' ? 'सुन रहा हूँ... बोलें' : 'SPEAK NOW');
+        indicatorText.style.color = '#10b981';
+      } else if (state === 'processing') {
+        orb.classList.add('processing');
+        indicatorText.textContent = currentLang === 'te' ? 'ప్రాసెస్ చేస్తోంది...' : (currentLang === 'hi' ? 'प्रोसेस किया जा रहा है...' : 'PROCESSING');
+        indicatorText.style.color = '#8b5cf6';
+      }
+    }
+
+    // Main Question Controller
+    function askQuestion() {
+      stopVoiceActivity();
+      
+      if (questionIndex >= currentQuestions.length) {
+        setOrbState('speaking');
+        const completeMsg = currentLang === 'te' ? 'ధన్యవాదాలు! ఫారమ్ లోని వివరాలు నింపబడ్డాయి.' : (currentLang === 'hi' ? 'धन्यवाद! फॉर्म में जानकारी भर दी गई है।' : 'Completed! Review your details.');
+        qTitle.textContent = "";
+        qText.textContent = completeMsg;
+        transcriptPreview.textContent = "";
+
+        speakText(completeMsg, () => {
+          setTimeout(exitVoiceMode, 2000);
+        });
+        return;
+      }
+
+      const q = currentQuestions[questionIndex];
+      
+      // Highlight target input field in form
+      document.querySelectorAll('.voice-active-field').forEach(f => f.classList.remove('voice-active-field'));
+      const formField = document.getElementById(q.targetId);
+      if (formField) {
+        formField.classList.add('voice-active-field');
+        formField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+
+      // Update screen text
+      qTitle.textContent = `${currentLang === 'te' ? 'ప్రశ్న' : (currentLang === 'hi' ? 'प्रश्न' : 'Question')} ${questionIndex + 1} of ${currentQuestions.length} (${q.label})`;
+      qText.textContent = q.query;
+      transcriptPreview.textContent = "";
+
+      setOrbState('speaking');
+      
+      // Play Synthesized Voice
+      speakText(q.query, () => {
+        startListening(q);
+      });
+    }
+
+    // TTS speaker
+    function speakText(text, callback) {
+      if (isMuted) {
+        callback();
+        return;
+      }
+      activeUtterance = new SpeechSynthesisUtterance(text);
+      activeUtterance.lang = activeLocale.synthesis;
+      activeUtterance.onend = () => {
+        activeUtterance = null;
+        callback();
+      };
+      activeUtterance.onerror = () => {
+        activeUtterance = null;
+        callback();
+      };
+      window.speechSynthesis.speak(activeUtterance);
+    }
+
+    // Normalizer for wage number words
+    function parseSpokenNumber(text) {
+      const ones = { zero:0, one:1, two:2, three:3, four:4, five:5, six:6, seven:7, eight:8, nine:9, ten:10, eleven:11, twelve:12, thirteen:13, fourteen:14, fifteen:15, sixteen:16, seventeen:17, eighteen:18, nineteen:19 };
+      const tens = { twenty:20, thirty:30, forty:40, fifty:50, sixty:60, seventy:70, eighty:80, ninety:90 };
+      const mults = { hundred:100, thousand:1000, lakh:100000, lac:100000 };
+
+      let clean = text.toLowerCase().replace(/rupees?|rs\.?|₹|inr/gi, '').trim();
+      const direct = clean.replace(/[,\s]/g, '');
+      if (/^\d+(\.\d+)?$/.test(direct)) return direct;
+
+      const words = clean.split(/\s+/);
+      let total = 0, current = 0;
+      for (const w of words) {
+        if (ones[w] !== undefined)      { current += ones[w]; }
+        else if (tens[w] !== undefined) { current += tens[w]; }
+        else if (mults[w] !== undefined) {
+          if (mults[w] >= 1000) { total = (total + current) * mults[w]; current = 0; }
+          else                  { current *= mults[w]; }
+        } else {
+          const n = parseFloat(w.replace(/,/g, ''));
+          if (!isNaN(n)) current += n;
+        }
+      }
+      total += current;
+      return total > 0 ? String(total) : null;
+    }
+
+    // Input date parser
+    function parseSpokenDate(text) {
+      const clean = text.toLowerCase().trim();
+      const today = new Date();
+      if (clean.includes("today") || clean.includes("आज") || clean.includes("ఈ రోజు") || clean.includes("ఇప్పుడు")) {
+        return today.toISOString().split('T')[0];
+      }
+      if (clean.includes("tomorrow") || clean.includes("कल") || clean.includes("రేపు")) {
+        const tomorrow = new Date(today);
+        tomorrow.setDate(today.getDate() + 1);
+        return tomorrow.toISOString().split('T')[0];
+      }
+      const parsed = Date.parse(clean);
+      if (!isNaN(parsed)) {
+        return new Date(parsed).toISOString().split('T')[0];
+      }
+      return today.toISOString().split('T')[0];
+    }
+
+    // Dropdown value selector
+    function matchDropdownOption(text, q) {
+      const clean = text.toLowerCase().trim();
+      if (!q.optionsMap) return null;
+      for (const [keyword, value] of Object.entries(q.optionsMap)) {
+        if (clean.includes(keyword)) {
+          return value;
+        }
+      }
+      return null;
+    }
+
+    // Speech listener
+    function startListening(q) {
+      setOrbState('listening');
+      activeRecognition = new SpeechRecognition();
+      activeRecognition.lang = activeLocale.speech;
+      activeRecognition.interimResults = true;
+      activeRecognition.continuous = false;
+      activeRecognition.maxAlternatives = 1;
+
+      activeRecognition.onresult = (event) => {
+        let interimText = '';
+        let finalText = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const res = event.results[i];
+          if (res.isFinal) finalText += res[0].transcript;
+          else             interimText += res[0].transcript;
+        }
+        transcriptPreview.textContent = interimText || finalText;
+
+        if (finalText) {
+          stopVoiceActivity();
+          setOrbState('processing');
+          
+          const targetInput = document.getElementById(q.targetId);
+          if (targetInput) {
+            let val = finalText.trim();
+            if (q.mode === 'number') {
+              const parsedNum = parseSpokenNumber(val);
+              if (parsedNum) val = parsedNum;
+              else val = val.replace(/[^0-9.]/g, '');
+            } else if (q.mode === 'phone') {
+              val = val.replace(/[^+\d\s]/g, '').trim();
+            } else if (q.mode === 'date') {
+              val = parseSpokenDate(val);
+            } else if (q.mode === 'select') {
+              const matchedVal = matchDropdownOption(val, q);
+              if (matchedVal) {
+                val = matchedVal;
+              } else {
+                val = targetInput.value;
+              }
+            }
+            targetInput.value = val;
+            targetInput.dispatchEvent(new Event('input', { bubbles: true }));
+          }
+
+          transcriptPreview.textContent = `✓ Recorded: ${finalText}`;
+          nextStepTimeout = setTimeout(() => {
+            questionIndex++;
+            askQuestion();
+          }, 1500);
+        }
+      };
+
+      activeRecognition.onerror = (event) => {
+        console.warn('SpeechRecognition error:', event.error);
+        if (event.error === 'no-speech') {
+          askQuestion();
+        }
+      };
+
+      activeRecognition.onend = () => {
+        if (orb.classList.contains('listening') && activeRecognition) {
+          try { activeRecognition.start(); } catch(e) {}
+        }
+      };
+
+      activeRecognition.start();
+    }
+
+    // Controls listeners
+    muteBtn.addEventListener('click', () => {
+      isMuted = !isMuted;
+      if (isMuted) {
+        muteBtn.textContent = `🔊 ${currentLang === 'te' ? 'అన్‌మ్యూట్' : (currentLang === 'hi' ? 'अनम्यूट' : 'Unmute')}`;
+        muteBtn.classList.add('muted');
+        if (window.speechSynthesis) window.speechSynthesis.cancel();
+      } else {
+        muteBtn.textContent = `🔇 ${currentLang === 'te' ? 'మ్యూట్' : (currentLang === 'hi' ? 'म्यूट' : 'Mute')}`;
+        muteBtn.classList.remove('muted');
+        askQuestion();
+      }
+    });
+
+    skipBtn.addEventListener('click', () => {
+      stopVoiceActivity();
+      questionIndex++;
+      askQuestion();
+    });
+
+    restartBtn.addEventListener('click', () => {
+      stopVoiceActivity();
+      questionIndex = 0;
+      askQuestion();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && overlay.style.display === 'flex') {
+        exitVoiceMode();
+      }
+    });
+
+    // ─── Automated Mock state rendering for screenshots ────────────────────────
+    const urlParams = new URLSearchParams(window.location.search);
+    const mockState = urlParams.get('mock_voice_state');
+    if (mockState) {
+      window.speechSynthesis.speak = function(utterance) {
+        if (utterance.onend) utterance.onend();
+      };
+      
+      currentQuestions = VOICE_QUESTIONS[currentLang] || VOICE_QUESTIONS.en;
+      
+      if (mockState === '1') {
+        questionIndex = 0;
+        const q = currentQuestions[questionIndex];
+        qTitle.textContent = `Question 1 of 12 (${q.label})`;
+        qText.textContent = q.query;
+        setOrbState('speaking');
+      } else if (mockState === '2') {
+        questionIndex = 4;
+        const q = currentQuestions[questionIndex];
+        qTitle.textContent = `Question 5 of 12 (${q.label})`;
+        qText.textContent = q.query;
+        setOrbState('listening');
+        transcriptPreview.textContent = "Brick masonry and wall plastering work";
+      } else if (mockState === '3') {
+        questionIndex = 5;
+        const q = currentQuestions[questionIndex];
+        qTitle.textContent = `Question 6 of 12 (${q.label})`;
+        qText.textContent = q.query;
+        setOrbState('processing');
+        transcriptPreview.textContent = "✓ Recorded: Rs 1500";
+      }
+    }
+
+  })();
 </script>
 {% endblock %}
