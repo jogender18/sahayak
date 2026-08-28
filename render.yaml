@@ -7,7 +7,7 @@
     startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
     envVars:
       - key: PUBLIC_BASE_URL
-        value: https://sahayak.onrender.com
+        value: https://sahayak-k7q2.onrender.com
       - key: DATABASE_URL
         fromDatabase:
           name: sahayak-postgres
