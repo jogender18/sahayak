@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t.not_found_title }} - Sahayak{% endblock %}
+
+{% block content %}
+<div class="main-card" style="text-align: center; padding: 40px 20px;">
+  <div style="font-size: 54px; margin-bottom: 12px;">⚠️</div>
+  <h1 style="font-size: 26px; font-weight: 800; color: #b91c1c; margin-bottom: 8px;">{{ t.not_found_title }}</h1>
+  <p style="font-size: 18px; color: #475569; max-width: 500px; margin: 0 auto 24px auto;">
+    {{ t.not_found_text }}
+  </p>
+  <a href="{{ url_for('index', lang=current_lang) }}" class="btn btn-primary">
+    <span>{{ t.btn_return_home }}</span>
+  </a>
+</div>
+{% endblock %}

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="{{ current_lang }}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <title>{% block title %}{{ t.app_title }}{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="description" content="{{ t.app_tagline }}">
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-inner">
+      <div>
+        <div class="brand-title">
+          <span>🤝 Sahayak (सहायक / సహాయక్)</span>
+          <span class="brand-badge">{{ t.badge_wage_proof }}</span>
+        </div>
+        <div class="tagline">{{ t.app_tagline }}</div>
+      </div>
+      
+      <div class="header-actions">
+        <!-- Language Switcher -->
+        <div class="lang-switcher">
+          <span class="lang-icon">🌐</span>
+          {% for item in all_langs %}
+            <a href="?lang={{ item.code }}" class="lang-btn {% if current_lang == item.code %}active{% endif %}">
+              {{ item.label }}
+            </a>
+          {% endfor %}
+        </div>
+
+        <div class="header-links">
+          <a href="{{ url_for('index', lang=current_lang) }}">
+            <span>{{ t.nav_new_agreement }}</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="app-footer">
+    <p><strong>{{ t.footer_text }}</strong></p>
+    <p style="font-size: 14px; margin-top: 4px;">{{ t.footer_sub }}</p>
+  </footer>
+</body>
+</html>

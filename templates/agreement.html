@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t.accord_success_title }} - {{ agreement.id[:8] }} | Sahayak{% endblock %}
+
+{% block content %}
+<div class="main-card">
+  
+  <div class="verified-banner">
+    <div class="verified-icon">✅</div>
+    <div class="verified-title">{{ t.accord_success_title }}</div>
+    <div class="verified-sub">{{ t.accord_success_sub }}</div>
+  </div>
+
+  <div style="background: #f1f5f9; border: 2px solid #0f172a; border-radius: 8px; padding: 14px 18px; margin-bottom: 20px;">
+    <div style="font-size: 13px; font-weight: 800; color: #475569; text-transform: uppercase;">{{ t.accord_id_label }}</div>
+    <div style="font-size: 19px; font-weight: 900; color: #0f172a; word-break: break-all; margin: 4px 0 8px 0; font-family: monospace;">
+      {{ agreement.id }}
+    </div>
+    <div style="font-size: 14px; color: #334155;">
+      📅 {{ t.recorded_on }}: <strong>{{ agreement.created_at }}</strong>
+    </div>
+  </div>
+
+  <!-- Primary Action Buttons -->
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 24px;">
+    <a href="{{ url_for('download_pdf', agreement_id=agreement.id, lang=current_lang) }}" class="btn btn-primary" download>
+      <span>{{ t.btn_download_pdf }}</span>
+    </a>
+    <a href="{{ url_for('verify_agreement', agreement_id=agreement.id, lang=current_lang) }}" class="btn btn-success">
+      <span>{{ t.btn_view_verify }}</span>
+    </a>
+  </div>
+
+  <!-- QR Code & Public Link Box -->
+  <div class="qr-section">
+    <h3 style="font-size: 19px; font-weight: 800; color: #0f172a; margin-bottom: 6px;">
+      {{ t.scan_verify_title }}
+    </h3>
+    <p style="font-size: 14px; color: #475569; margin-bottom: 12px;">
+      {{ t.scan_verify_desc }}
+    </p>
+    
+    <img src="{{ qr_data_uri }}" alt="Agreement Verification QR Code" class="qr-image">
+
+    <div style="margin-top: 14px; padding: 10px; background: #f8fafc; border-radius: 6px; border: 1px solid #cbd5e1;">
+      <div style="font-size: 13px; font-weight: 700; color: #475569;">{{ t.verification_url_label }}</div>
+      <a href="{{ verify_url }}" style="color: #1d4ed8; font-weight: 700; font-size: 15px; word-break: break-all;" target="_blank">
+        {{ verify_url }}
+      </a>
+    </div>
+
+    <!-- WhatsApp Share -->
+    <div style="margin-top: 14px;">
+      <a href="https://wa.me/?text={{ share_text | urlencode }}" target="_blank" class="btn btn-outline" style="font-size: 16px; padding: 10px 18px;">
+        <span>{{ t.btn_share_whatsapp }}</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Summary of Terms -->
+  <h3 style="font-size: 20px; font-weight: 800; margin: 24px 0 14px 0; border-bottom: 2px solid #cbd5e1; padding-bottom: 6px;">
+    {{ t.summary_title }}
+  </h3>
+
+  <div class="detail-grid">
+    <div class="detail-card">
+      <div class="detail-label">{{ t.role_employer }}</div>
+      <div class="detail-value">{{ agreement.owner_name }}</div>
+      <div style="font-size: 15px; color: #475569; margin-top: 2px;">📞 {{ agreement.owner_phone }}</div>
+    </div>
+
+    <div class="detail-card">
+      <div class="detail-label">{{ t.role_worker }}</div>
+      <div class="detail-value">{{ agreement.worker_name }}</div>
+      <div style="font-size: 15px; color: #475569; margin-top: 2px;">📞 {{ agreement.worker_phone }}</div>
+    </div>
+
+    <div class="detail-card highlight">
+      <div class="detail-label">{{ t.lbl_agreed_wage }}</div>
+      <div class="detail-value wage">₹ {{ "{:,.2f}".format(agreement.wage_amount) }}</div>
+      <div style="font-size: 14px; font-weight: 700; color: #047857;">{{ agreement.wage_unit }}</div>
+    </div>
+
+    <div class="detail-card">
+      <div class="detail-label">{{ t.lbl_payment_sched }}</div>
+      <div class="detail-value">{{ agreement.payment_schedule | title }}</div>
+    </div>
+
+    <div class="detail-card">
+      <div class="detail-label">{{ t.lbl_start_duration }}</div>
+      <div class="detail-value">{{ agreement.start_date }}</div>
+      <div style="font-size: 14px; color: #475569;">{{ t.lbl_duration }}: {{ agreement.duration }}</div>
+    </div>
+
+    <div class="detail-card">
+      <div class="detail-label">{{ t.lbl_work_loc }}</div>
+      <div class="detail-value" style="font-size: 16px;">{{ agreement.work_location }}</div>
+    </div>
+  </div>
+
+  <div class="detail-card" style="margin-bottom: 16px;">
+    <div class="detail-label">{{ t.lbl_work_desc }}</div>
+    <div style="font-size: 17px; font-weight: 600; color: #1e293b; margin-top: 4px;">{{ agreement.work_description }}</div>
+  </div>
+
+  <div class="detail-card alert">
+    <div class="detail-label">{{ t.lbl_penalty_clause }}</div>
+    <div class="detail-value penalty">{{ agreement.late_penalty }}</div>
+  </div>
+
+  <div style="margin-top: 24px; display: flex; gap: 12px; flex-wrap: wrap;">
+    <a href="{{ url_for('index', lang=current_lang) }}" class="btn btn-outline" style="flex: 1;">
+      <span>{{ t.btn_create_another }}</span>
+    </a>
+  </div>
+
+</div>
+{% endblock %}

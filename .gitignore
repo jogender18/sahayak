@@ -1,0 +1,17 @@
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.db
+sahayak.db
+public_url.txt
+cloudflared.exe
+sample_wage_agreement.pdf
+sample_pdf_page_*.png
+screenshot_*.png
+capture_screenshots.py
+generate_sample_pdf.py
+tunnel_manager.py
+git/
+sahayak_deploy.zip
+create_deploy_zip.py

@@ -1,0 +1,307 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t.form_title }} - Sahayak{% endblock %}
+
+{% block content %}
+<div class="main-card">
+  <h1 class="page-title">{{ t.form_title }}</h1>
+  
+  <div class="page-intro">
+    <strong>{{ t.why_title }}</strong><br>
+    {{ t.why_text }}
+  </div>
+
+  <!-- Quick Fill Helpers -->
+  <div style="margin-bottom: 20px; padding: 14px; background: #f1f5f9; border: 2px solid #cbd5e1; border-radius: 8px; font-size: 15px;">
+    <strong style="color: #0f172a;">{{ t.quick_fill }}</strong>
+    <button type="button" onclick="fillSample('mason')" class="preset-btn">{{ t.preset_mason }}</button>
+    <button type="button" onclick="fillSample('painting')" class="preset-btn">{{ t.preset_paint }}</button>
+    <button type="button" onclick="fillSample('carpentry')" class="preset-btn">{{ t.preset_carpenter }}</button>
+  </div>
+
+  <form action="{{ url_for('create') }}" method="POST" id="agreementForm">
+
+    <!-- Section 1: Owner / Contractor Details -->
+    <div class="form-section">
+      <h2 class="section-title owner">
+        <span>{{ t.sec1_title }}</span>
+      </h2>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label for="owner_name">
+            {{ t.owner_name_label }} <span class="req-star">*</span>
+            <span class="label-sub">{{ t.owner_name_sub }}</span>
+          </label>
+          <input type="text" id="owner_name" name="owner_name" placeholder="{{ t.owner_name_ph }}" required>
+        </div>
+
+        <div class="form-group">
+          <label for="owner_phone">
+            {{ t.owner_phone_label }} <span class="req-star">*</span>
+            <span class="label-sub">{{ t.owner_phone_sub }}</span>
+          </label>
+          <input type="tel" id="owner_phone" name="owner_phone" placeholder="{{ t.owner_phone_ph }}" required>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2: Worker Details -->
+    <div class="form-section">
+      <h2 class="section-title worker">
+        <span>{{ t.sec2_title }}</span>
+      </h2>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label for="worker_name">
+            {{ t.worker_name_label }} <span class="req-star">*</span>
+            <span class="label-sub">{{ t.worker_name_sub }}</span>
+          </label>
+          <input type="text" id="worker_name" name="worker_name" placeholder="{{ t.worker_name_ph }}" required>
+        </div>
+
+        <div class="form-group">
+          <label for="worker_phone">
+            {{ t.worker_phone_label }} <span class="req-star">*</span>
+            <span class="label-sub">{{ t.worker_phone_sub }}</span>
+          </label>
+          <input type="tel" id="worker_phone" name="worker_phone" placeholder="{{ t.worker_phone_ph }}" required>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 3: Work Description & Location -->
+    <div class="form-section">
+      <h2 class="section-title terms">
+        <span>{{ t.sec3_title }}</span>
+      </h2>
+
+      <div class="form-group">
+        <label for="work_description">
+          {{ t.work_desc_label }} <span class="req-star">*</span>
+          <span class="label-sub">{{ t.work_desc_sub }}</span>
+        </label>
+        <textarea id="work_description" name="work_description" rows="3" placeholder="{{ t.work_desc_ph }}" required></textarea>
+        <div class="input-hint">{{ t.work_desc_hint }}</div>
+      </div>
+
+      <div class="form-group">
+        <label for="work_location">
+          {{ t.work_loc_label }} <span class="req-star">*</span>
+          <span class="label-sub">{{ t.work_loc_sub }}</span>
+        </label>
+        <input type="text" id="work_location" name="work_location" placeholder="{{ t.work_loc_ph }}" required>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="start_date">
+            {{ t.start_date_label }} <span class="req-star">*</span>
+            <span class="label-sub">{{ t.start_date_sub }}</span>
+          </label>
+          <input type="date" id="start_date" name="start_date" required>
+        </div>
+
+        <div class="form-group">
+          <label for="duration">
+            {{ t.duration_label }} <span class="req-star">*</span>
+            <span class="label-sub">{{ t.duration_sub }}</span>
+          </label>
+          <input type="text" id="duration" name="duration" placeholder="{{ t.duration_ph }}" required>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 4: Wage, Schedule & Penalties -->
+    <div class="form-section">
+      <h2 class="section-title">
+        <span>{{ t.sec4_title }}</span>
+      </h2>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="wage_amount">
+            {{ t.wage_amount_label }} <span class="req-star">*</span>
+            <span class="label-sub">{{ t.wage_amount_sub }}</span>
+          </label>
+          <input type="number" id="wage_amount" name="wage_amount" step="any" min="1" placeholder="{{ t.wage_amount_ph }}" required>
+        </div>
+
+        <div class="form-group">
+          <label for="wage_unit">
+            {{ t.wage_unit_label }} <span class="req-star">*</span>
+            <span class="label-sub">{{ t.wage_unit_sub }}</span>
+          </label>
+          <select id="wage_unit" name="wage_unit" required>
+            <option value="per day">{{ t.unit_day }}</option>
+            <option value="per job">{{ t.unit_job }}</option>
+            <option value="per month">{{ t.unit_month }}</option>
+            <option value="per hour">{{ t.unit_hour }}</option>
+            <option value="per sq. ft.">{{ t.unit_sqft }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="payment_schedule">
+          {{ t.pay_sched_label }} <span class="req-star">*</span>
+          <span class="label-sub">{{ t.pay_sched_sub }}</span>
+        </label>
+        <select id="payment_schedule" name="payment_schedule" required>
+          <option value="weekly">{{ t.sched_weekly }}</option>
+          <option value="on completion">{{ t.sched_completion }}</option>
+          <option value="installments">{{ t.sched_installments }}</option>
+          <option value="daily">{{ t.sched_daily }}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="late_penalty">
+          {{ t.late_penalty_label }}
+          <span class="label-sub">{{ t.late_penalty_sub }}</span>
+        </label>
+        <input type="text" id="late_penalty" name="late_penalty" placeholder="{{ t.late_penalty_ph }}">
+        <div class="input-hint">{{ t.late_penalty_hint }}</div>
+      </div>
+    </div>
+
+    <!-- Submit Button -->
+    <div style="margin-top: 24px;">
+      <button type="submit" class="btn btn-primary btn-block">
+        <span>{{ t.btn_generate }}</span>
+      </button>
+      <p style="text-align: center; font-size: 14px; color: #64748b; margin-top: 10px;">
+        {{ t.btn_generating_sub }}
+      </p>
+    </div>
+
+  </form>
+</div>
+
+<script>
+  // Set default date to today
+  document.getElementById('start_date').value = new Date().toISOString().split('T')[0];
+
+  const currentLang = "{{ current_lang }}";
+
+  function fillSample(type) {
+    if (currentLang === 'te') {
+      if (type === 'mason') {
+        document.getElementById('owner_name').value = 'రామారావు (శ్రీ రాఘవేంద్ర కన్‌స్ట్రక్షన్స్)';
+        document.getElementById('owner_phone').value = '+91 98765 43210';
+        document.getElementById('worker_name').value = 'వెంకటేశ్వర్లు మేస్త్రీ';
+        document.getElementById('worker_phone').value = '+91 91234 56789';
+        document.getElementById('work_description').value = 'రెండు అంతస్తుల భవనానికి ఇటుక పని, వెలుపలి ప్లాస్టరింగ్ మరియు ఫ్లోరింగ్ టైల్స్ వేయుట.';
+        document.getElementById('work_location').value = 'ప్లాట్ 42, కూకట్‌పల్లి హౌసింగ్ బోర్డ్ కాలనీ, హైదరాబాద్';
+        document.getElementById('duration').value = '14 రోజులు';
+        document.getElementById('wage_amount').value = '950';
+        document.getElementById('wage_unit').value = 'per day';
+        document.getElementById('payment_schedule').value = 'weekly';
+        document.getElementById('late_penalty').value = 'శనివారం లోగా చెల్లించకపోతే రోజుకు ₹150 ఆలస్య పరిహారం.';
+      } else if (type === 'painting') {
+        document.getElementById('owner_name').value = 'సునీతారెడ్డి';
+        document.getElementById('owner_phone').value = '+91 98111 22334';
+        document.getElementById('worker_name').value = 'నాగరాజు పెయింటర్';
+        document.getElementById('worker_phone').value = '+91 98222 33445';
+        document.getElementById('work_description').value = '3BHK ఫ్లాట్ మొత్తం పుట్టీ, ప్రైమర్ మరియు డబుల్ కోట్ ఎమల్షన్ పెయింటింగ్ పని.';
+        document.getElementById('work_location').value = 'ఫ్లాట్ 302, రాయల్ ఆర్కేడ్, గచ్చిబౌలి, హైదరాబాద్';
+        document.getElementById('duration').value = '7 రోజులు';
+        document.getElementById('wage_amount').value = '18000';
+        document.getElementById('wage_unit').value = 'per job';
+        document.getElementById('payment_schedule').value = 'installments';
+        document.getElementById('late_penalty').value = 'పని ముగిసిన 24 గంటలలోపు చెల్లింపు జరగాలి, లేదంటే రోజుకు ₹500 జరిమానా.';
+      } else if (type === 'carpentry') {
+        document.getElementById('owner_name').value = 'అనిల్ కుమార్ (దుకాణదారు)';
+        document.getElementById('owner_phone').value = '+91 97777 88899';
+        document.getElementById('worker_name').value = 'శ్రీను వడ్రంగి';
+        document.getElementById('worker_phone').value = '+91 96666 55544';
+        document.getElementById('work_description').value = '4 ప్లైవుడ్ ర్యాక్‌లు మరియు ప్రధాన బిల్లింగ్ కౌంటర్ తయారీ.';
+        document.getElementById('work_location').value = 'షాప్ నం. 12, మెయిన్ రోడ్డు, విజయవాడ';
+        document.getElementById('duration').value = '5 రోజులు';
+        document.getElementById('wage_amount').value = '1200';
+        document.getElementById('wage_unit').value = 'per day';
+        document.getElementById('payment_schedule').value = 'on completion';
+        document.getElementById('late_penalty').value = 'కౌంటర్ ఫిట్టింగ్ పూర్తయిన వెంటనే పూర్తి సెటిల్మెంట్.';
+      }
+    } else if (currentLang === 'hi') {
+      if (type === 'mason') {
+        document.getElementById('owner_name').value = 'रमेश वर्मा (वर्मा कंस्ट्रक्शन)';
+        document.getElementById('owner_phone').value = '+91 98765 43210';
+        document.getElementById('worker_name').value = 'सुरेश राम (राजमिस्त्री)';
+        document.getElementById('worker_phone').value = '+91 91234 56789';
+        document.getElementById('work_description').value = '2 कमरों की चिनाई, बाहरी प्लास्टर और फर्श की टाइल लगाने का काम।';
+        document.getElementById('work_location').value = 'प्लॉट 42, ग्रीन पार्क, जयपुर';
+        document.getElementById('duration').value = '10 दिन';
+        document.getElementById('wage_amount').value = '900';
+        document.getElementById('wage_unit').value = 'per day';
+        document.getElementById('payment_schedule').value = 'weekly';
+        document.getElementById('late_penalty').value = 'शनिवार तक भुगतान न होने पर ₹150 प्रतिदिन हर्जाना।';
+      } else if (type === 'painting') {
+        document.getElementById('owner_name').value = 'सुनीता शर्मा';
+        document.getElementById('owner_phone').value = '+91 98111 22334';
+        document.getElementById('worker_name').value = 'मुकेश कुमार पेंटर';
+        document.getElementById('worker_phone').value = '+91 98222 33445';
+        document.getElementById('work_description').value = '3BHK फ्लैट की पूरी पुताई, प्राइमर और डबल-कोट पेंटिंग।';
+        document.getElementById('work_location').value = 'फ्लैट 402, शांति हाइट्स, नोएडा';
+        document.getElementById('duration').value = '7 दिन';
+        document.getElementById('wage_amount').value = '18500';
+        document.getElementById('wage_unit').value = 'per job';
+        document.getElementById('payment_schedule').value = 'installments';
+        document.getElementById('late_penalty').value = 'काम पूरा होने पर 24 घंटे में भुगतान, अन्यथा ₹500/दिन हर्जाना।';
+      } else if (type === 'carpentry') {
+        document.getElementById('owner_name').value = 'अनिल गुप्ता (दुकानदार)';
+        document.getElementById('owner_phone').value = '+91 97777 88899';
+        document.getElementById('worker_name').value = 'दिनेश मिस्त्री';
+        document.getElementById('worker_phone').value = '+91 96666 55544';
+        document.getElementById('work_description').value = '4 प्लाईवुड रैक और फ्रंट बिलिंग काउंटर निर्माण।';
+        document.getElementById('work_location').value = 'दुकान नं. 12, मुख्य बाजार, लखनऊ';
+        document.getElementById('duration').value = '5 दिन';
+        document.getElementById('wage_amount').value = '1200';
+        document.getElementById('wage_unit').value = 'per day';
+        document.getElementById('payment_schedule').value = 'on completion';
+        document.getElementById('late_penalty').value = 'काउंटर फिटिंग पर तत्काल भुगतान।';
+      }
+    } else {
+      // English default
+      if (type === 'mason') {
+        document.getElementById('owner_name').value = 'Ramesh Verma (Verma Builders)';
+        document.getElementById('owner_phone').value = '+91 98765 43210';
+        document.getElementById('worker_name').value = 'Suresh Ram (Lead Mason)';
+        document.getElementById('worker_phone').value = '+91 91234 56789';
+        document.getElementById('work_description').value = 'Brick masonry work for 2 boundary walls and exterior plastering for residential building.';
+        document.getElementById('work_location').value = 'Plot 42, Green Park Enclave, New Delhi';
+        document.getElementById('duration').value = '10 Days';
+        document.getElementById('wage_amount').value = '900';
+        document.getElementById('wage_unit').value = 'per day';
+        document.getElementById('payment_schedule').value = 'weekly';
+        document.getElementById('late_penalty').value = 'Rs. 150 per day late compensation if payment delayed past Saturday.';
+      } else if (type === 'painting') {
+        document.getElementById('owner_name').value = 'Sunita Sharma';
+        document.getElementById('owner_phone').value = '+91 98111 22334';
+        document.getElementById('worker_name').value = 'Mukesh Kumar Painter';
+        document.getElementById('worker_phone').value = '+91 98222 33445';
+        document.getElementById('work_description').value = 'Full interior putty, primer, and double-coat emulsion painting of 3BHK flat.';
+        document.getElementById('work_location').value = 'Flat 402, Shanti Heights, Sector 62, Noida';
+        document.getElementById('duration').value = '7 Days';
+        document.getElementById('wage_amount').value = '18500';
+        document.getElementById('wage_unit').value = 'per job';
+        document.getElementById('payment_schedule').value = 'installments';
+        document.getElementById('late_penalty').value = 'Full clearance within 24 hours of final inspection; Rs. 500/day penalty thereafter.';
+      } else if (type === 'carpentry') {
+        document.getElementById('owner_name').value = 'Anil Gupta (Shop Owner)';
+        document.getElementById('owner_phone').value = '+91 97777 88899';
+        document.getElementById('worker_name').value = 'Dinesh Mistri';
+        document.getElementById('worker_phone').value = '+91 96666 55544';
+        document.getElementById('work_description').value = 'Fabrication and fitting of 4 commercial plywood storage racks and billing counter.';
+        document.getElementById('work_location').value = 'Shop No. 12, Main Market, Lucknow';
+        document.getElementById('duration').value = '5 Days';
+        document.getElementById('wage_amount').value = '1200';
+        document.getElementById('wage_unit').value = 'per day';
+        document.getElementById('payment_schedule').value = 'on completion';
+        document.getElementById('late_penalty').value = 'Immediate settlement upon counter installation.';
+      }
+    }
+  }
+</script>
+{% endblock %}

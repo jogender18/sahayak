@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t.verify_page_title }} - {{ agreement.id[:8] }} | Sahayak{% endblock %}
+
+{% block content %}
+<div class="main-card">
+
+  <!-- Verified Status Banner -->
+  <div class="verified-banner">
+    <div class="verified-icon">🛡️ ✅</div>
+    <div class="verified-title">{{ t.verify_page_title }}</div>
+    <div class="verified-sub">{{ t.verify_page_sub }}</div>
+  </div>
+
+  <div style="background: #f8fafc; border: 2px solid #0f172a; border-radius: 8px; padding: 14px; margin-bottom: 20px; text-align: center;">
+    <div style="font-size: 13px; font-weight: 700; color: #475569; text-transform: uppercase;">{{ t.accord_id_label }}</div>
+    <div style="font-size: 18px; font-weight: 900; color: #0f172a; font-family: monospace; word-break: break-all; margin-top: 2px;">
+      {{ agreement.id }}
+    </div>
+    <div style="font-size: 14px; color: #64748b; margin-top: 4px;">
+      🕒 {{ t.recorded_on }}: <strong>{{ agreement.created_at }}</strong>
+    </div>
+  </div>
+
+  <div class="page-intro" style="background: #f0fdf4; border-left-color: #047857;">
+    <strong>{{ t.notice_mediator_title }}</strong><br>
+    {{ t.notice_mediator_text }}
+  </div>
+
+  <!-- Key Parties Table -->
+  <div class="detail-grid">
+    <div class="detail-card" style="border-top: 4px solid #1d4ed8;">
+      <div class="detail-label">{{ t.role_employer }}</div>
+      <div class="detail-value">{{ agreement.owner_name }}</div>
+      <div style="font-size: 16px; color: #334155; margin-top: 4px;">
+        📞 <strong>{{ agreement.owner_phone }}</strong>
+      </div>
+    </div>
+
+    <div class="detail-card" style="border-top: 4px solid #047857;">
+      <div class="detail-label">{{ t.role_worker }}</div>
+      <div class="detail-value">{{ agreement.worker_name }}</div>
+      <div style="font-size: 16px; color: #334155; margin-top: 4px;">
+        📞 <strong>{{ agreement.worker_phone }}</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- Wage & Contract Details -->
+  <h3 style="font-size: 20px; font-weight: 800; margin: 20px 0 12px 0; color: #0f172a;">
+    {{ t.lbl_binding_terms }}
+  </h3>
+
+  <div class="detail-grid">
+    <div class="detail-card highlight">
+      <div class="detail-label">{{ t.lbl_agreed_wage }}</div>
+      <div class="detail-value wage">₹ {{ "{:,.2f}".format(agreement.wage_amount) }}</div>
+      <div style="font-size: 15px; font-weight: 700; color: #065f46;">{{ t.lbl_rate_unit }}: {{ agreement.wage_unit }}</div>
+    </div>
+
+    <div class="detail-card">
+      <div class="detail-label">{{ t.lbl_payment_sched }}</div>
+      <div class="detail-value">{{ agreement.payment_schedule | title }}</div>
+    </div>
+
+    <div class="detail-card">
+      <div class="detail-label">{{ t.start_date_label }}</div>
+      <div class="detail-value">{{ agreement.start_date }}</div>
+      <div style="font-size: 14px; color: #475569;">{{ t.lbl_duration }}: {{ agreement.duration }}</div>
+    </div>
+
+    <div class="detail-card">
+      <div class="detail-label">{{ t.lbl_work_loc }}</div>
+      <div class="detail-value" style="font-size: 16px;">{{ agreement.work_location }}</div>
+    </div>
+  </div>
+
+  <div class="detail-card" style="margin-bottom: 16px;">
+    <div class="detail-label">{{ t.lbl_work_desc }}</div>
+    <div style="font-size: 17px; font-weight: 600; color: #1e293b; margin-top: 4px; line-height: 1.6;">
+      {{ agreement.work_description }}
+    </div>
+  </div>
+
+  <div class="detail-card alert" style="margin-bottom: 24px;">
+    <div class="detail-label">{{ t.lbl_penalty_clause }}</div>
+    <div class="detail-value penalty" style="font-size: 17px;">
+      {{ agreement.late_penalty }}
+    </div>
+  </div>
+
+  <!-- Action Buttons -->
+  <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+    <a href="{{ url_for('download_pdf', agreement_id=agreement.id, lang=current_lang) }}" class="btn btn-primary" style="flex: 1;" download>
+      <span>{{ t.btn_download_pdf }}</span>
+    </a>
+    <a href="{{ url_for('index', lang=current_lang) }}" class="btn btn-outline" style="flex: 1;">
+      <span>{{ t.nav_new_agreement }}</span>
+    </a>
+  </div>
+
+</div>
+{% endblock %}
