@@ -22,7 +22,7 @@
   </div>
 
   <!-- Primary Action Buttons -->
-  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 24px;">
+  <div class="action-buttons-grid">
     <a href="{{ url_for('download_pdf', agreement_id=agreement.id, lang=current_lang) }}" class="btn btn-primary" download>
       <span>{{ t.btn_download_pdf }}</span>
     </a>

@@ -36,11 +36,14 @@
   <!-- Conversational Full-Screen voice assistant mode -->
   <div id="voice-overlay" class="voice-overlay" {% if request.args.get('mock_voice_state') %}style="display: flex;"{% endif %}>
     <div class="voice-overlay-header">
-      <div class="voice-title-badge">
-        <span class="voice-status-dot"></span>
-        <span id="voice-badge-text">Voice Dictation Mode</span>
+      <div class="voice-header-top">
+        <div class="voice-title-badge">
+          <span class="voice-status-dot"></span>
+          <span id="voice-badge-text">Voice Dictation Mode</span>
+        </div>
+        <button type="button" class="voice-exit-btn" id="voice-exit-btn">✕ Exit</button>
       </div>
-      <button type="button" class="voice-exit-btn" id="voice-exit-btn">✕ Exit</button>
+      <div class="voice-doc-title">WAGE AGREEMENT</div>
     </div>
 
     <div class="voice-orb-container">
@@ -807,7 +810,13 @@
       activeRecognition.onerror = (event) => {
         console.warn('SpeechRecognition error:', event.error);
         if (event.error === 'no-speech') {
-          askQuestion();
+          // On mobile silence, do not restart TTS loop; keep listening or wait
+          if (orb.classList.contains('listening') && activeRecognition) {
+            try { activeRecognition.start(); } catch(e) {}
+          }
+        } else if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+          transcriptPreview.textContent = "⚠ Mic permission needed. Please allow microphone in browser.";
+          setOrbState('speaking');
         }
       };
 
@@ -817,7 +826,11 @@
         }
       };
 
-      activeRecognition.start();
+      try {
+        activeRecognition.start();
+      } catch(e) {
+        console.warn('Speech recognition start failed:', e);
+      }
     }
 
     // Controls and End Call / Skip / Mute Listeners

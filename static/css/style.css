@@ -526,6 +526,21 @@ textarea {
   font-size: 18px;
 }
 
+/* Action Buttons Grid */
+.action-buttons-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 600px) {
+  .action-buttons-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+}
+
 /* QR Box */
 .qr-section {
   text-align: center;
@@ -672,8 +687,9 @@ textarea {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw;
+  width: 100%;
   height: 100vh;
+  height: 100dvh;
   /* Warm cream paper background — matches the Wage Agreement document */
   background: #f5f0e8;
   /* Subtle horizontal ruled-paper lines for document feel */
@@ -691,10 +707,10 @@ textarea {
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  padding: 36px 24px 30px;
+  padding: 28px 18px 24px;
   box-sizing: border-box;
   /* faint border to simulate document edges */
-  border: 6px solid #e8dfc8;
+  border: 4px solid #e8dfc8;
 }
 
 /* Top rule line under header — mimics document header underline */
@@ -716,8 +732,15 @@ textarea {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  position: relative;
+  gap: 6px;
+}
+
+.voice-header-top {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
 }
 
 /* Replaces neon pill badge: looks like a document stamp label */
@@ -725,16 +748,18 @@ textarea {
   background: transparent;
   color: #7a1f2e;          /* deep maroon — matches PDF header */
   border: 1.5px solid #7a1f2e;
-  padding: 5px 18px;
+  padding: 4px 14px;
   border-radius: 2px;      /* rectangular, not pill */
   font-family: 'Georgia', 'Times New Roman', serif;
   font-size: 11px;
   font-weight: 400;
-  letter-spacing: 3px;
+  letter-spacing: 2px;
   text-transform: uppercase;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  min-width: 0;
+  white-space: nowrap;
 }
 
 .voice-status-dot {
@@ -744,6 +769,7 @@ textarea {
   background: #7a1f2e;
   display: inline-block;
   animation: dot-blink 1.6s ease-in-out infinite;
+  flex-shrink: 0;
 }
 
 @keyframes dot-blink {
@@ -752,34 +778,30 @@ textarea {
 }
 
 /* Main document title — mirrors "WAGE AGREEMENT" heading from the PDF */
-.voice-overlay-header::after {
-  content: 'WAGE AGREEMENT';
-  display: block;
+.voice-doc-title {
   font-family: 'Georgia', 'Times New Roman', serif;
-  font-size: 26px;
+  font-size: 24px;
   font-weight: 700;
-  letter-spacing: 4px;
+  letter-spacing: 3px;
   color: #1a0a00;
   text-align: center;
-  margin-top: 6px;
+  margin-top: 2px;
 }
 
 /* Exit button: plain rectangular document-style */
 .voice-exit-btn {
-  position: absolute;
-  right: 0;
-  top: 0;
   background: transparent;
   color: #7a1f2e;
   border: 1.5px solid #7a1f2e;
-  padding: 6px 14px;
+  padding: 5px 12px;
   border-radius: 2px;
   font-family: 'Georgia', 'Times New Roman', serif;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 400;
   cursor: pointer;
   letter-spacing: 1px;
   transition: background 0.2s, color 0.2s;
+  flex-shrink: 0;
 }
 
 .voice-exit-btn:hover {
@@ -1150,6 +1172,307 @@ textarea {
 .review-actions .btn-primary:hover {
   background: #1e40af;
 }
+
+/* ==========================================================================
+   Comprehensive Mobile Responsive Enhancements (< 640px and < 480px)
+   ========================================================================== */
+
+@media (max-width: 640px) {
+  body {
+    font-size: 16px;
+  }
+
+  .container {
+    padding: 10px 8px;
+    width: 100%;
+  }
+
+  .app-header {
+    padding: 12px 10px;
+  }
+
+  .header-inner {
+    gap: 10px;
+  }
+
+  .brand-title {
+    font-size: 18px;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .brand-badge {
+    font-size: 10px;
+    padding: 2px 6px;
+  }
+
+  .tagline {
+    font-size: 12px;
+  }
+
+  .header-actions {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .lang-switcher {
+    flex: 1;
+    min-width: 0;
+    justify-content: space-between;
+    padding: 2px 4px;
+    gap: 2px;
+  }
+
+  .lang-btn {
+    font-size: 11px;
+    padding: 4px 6px;
+    text-align: center;
+  }
+
+  .header-links {
+    flex-shrink: 0;
+  }
+
+  .header-links a {
+    font-size: 12px;
+    padding: 5px 10px;
+  }
+
+  .main-card {
+    padding: 16px 12px;
+    margin-top: 12px;
+    border-radius: 2px;
+  }
+
+  .page-title {
+    font-size: 20px;
+    padding-bottom: 8px;
+    letter-spacing: 0.5px;
+  }
+
+  .page-intro {
+    font-size: 13px;
+    padding: 10px 12px;
+    margin-bottom: 16px;
+  }
+
+  .form-section {
+    padding: 14px 10px;
+    margin-bottom: 16px;
+  }
+
+  .section-title {
+    font-size: 17px;
+    margin-bottom: 12px;
+  }
+
+  .quick-fill-panel {
+    padding: 12px 10px;
+  }
+
+  .preset-btn {
+    font-size: 12px;
+    padding: 6px 10px;
+    margin: 3px 2px;
+  }
+
+  .btn.btn-voice-trigger {
+    font-size: 14px;
+    padding: 10px 12px;
+  }
+
+  .voice-input-wrapper {
+    gap: 6px;
+    width: 100%;
+  }
+
+  .voice-input-wrapper input,
+  .voice-input-wrapper textarea,
+  .voice-input-wrapper select {
+    font-size: 16px; /* Prevents auto-zoom on iOS Safari */
+  }
+
+  .mic-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+  }
+
+  /* Full Screen Voice Overlay Mobile */
+  .voice-overlay {
+    padding: 14px 10px 16px;
+    border: none;
+  }
+
+  .voice-overlay::before {
+    top: 75px;
+  }
+
+  .voice-header-top {
+    gap: 6px;
+  }
+
+  .voice-title-badge {
+    font-size: 10px;
+    padding: 3px 8px;
+    letter-spacing: 1px;
+  }
+
+  .voice-doc-title {
+    font-size: 18px;
+    letter-spacing: 2px;
+    margin-top: 2px;
+  }
+
+  .voice-exit-btn {
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+
+  .voice-orb-container {
+    gap: 10px;
+  }
+
+  .voice-orb {
+    width: 84px;
+    height: 84px;
+  }
+
+  .voice-orb::before {
+    font-size: 30px;
+  }
+
+  .voice-indicator-text {
+    font-size: 11px;
+    letter-spacing: 1.5px;
+  }
+
+  .voice-question-title {
+    font-size: 10px;
+    letter-spacing: 1px;
+  }
+
+  .voice-question-text {
+    font-size: 16px;
+    min-height: 44px;
+    padding: 0 4px;
+    line-height: 1.35;
+  }
+
+  .voice-transcript-preview {
+    font-size: 13px;
+    padding-left: 6px;
+  }
+
+  .voice-controls-footer {
+    gap: 6px;
+    padding-top: 8px;
+  }
+
+  .voice-circle-btn {
+    min-width: 0;
+    flex: 1;
+    padding: 9px 4px;
+    font-size: 12px;
+    letter-spacing: 0;
+  }
+
+  .voice-end-call-btn {
+    min-width: 0;
+    flex: 1.2;
+    padding: 9px 6px;
+    font-size: 12px;
+    letter-spacing: 0;
+  }
+
+  /* Review Screen Mobile */
+  .review-modal {
+    padding: 6px;
+  }
+
+  .review-modal-content {
+    padding: 16px 12px;
+    max-height: 94dvh;
+    border-radius: 4px;
+    border-width: 2px;
+  }
+
+  .review-title {
+    font-size: 19px;
+  }
+
+  .review-subtitle {
+    font-size: 13px;
+    margin-bottom: 16px;
+  }
+
+  .review-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+
+  .review-group input,
+  .review-group textarea,
+  .review-group select {
+    font-size: 16px; /* Prevents auto-zoom on iOS */
+    padding: 8px 10px;
+  }
+
+  .review-actions {
+    flex-direction: column-reverse;
+    gap: 8px;
+    padding-top: 14px;
+  }
+
+  .review-actions .btn {
+    width: 100%;
+    padding: 11px;
+    font-size: 15px;
+  }
+
+  /* Agreement & Verification details */
+  .detail-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .detail-value {
+    font-size: 16px;
+  }
+
+  .detail-value.wage {
+    font-size: 19px;
+  }
+
+  .verified-banner {
+    padding: 12px 8px;
+  }
+
+  .verified-icon {
+    font-size: 30px;
+  }
+
+  .verified-title {
+    font-size: 17px;
+  }
+
+  .verified-sub {
+    font-size: 13px;
+  }
+
+  .qr-section {
+    padding: 14px 10px;
+  }
+
+  .qr-image {
+    max-width: 140px;
+  }
+}
+
 
 
 
