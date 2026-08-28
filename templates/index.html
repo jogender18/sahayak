@@ -709,51 +709,65 @@
       });
     }
 
-    // TTS speaker: loads high-quality open-source voice from server TTS endpoint,
-    // with local browser SpeechSynthesis fallback if offline or fails.
+    // TTS speaker: tries high-quality gTTS audio from server, falls back to
+    // browser SpeechSynthesis, with a final safety timeout to never get stuck.
     function speakText(text, callback) {
       if (isMuted) {
         callback();
         return;
       }
 
-      // Try server-side gTTS first
-      const audioUrl = `/api/tts?text=${encodeURIComponent(text)}&lang=${currentLang}`;
-      const audio = new Audio(audioUrl);
-      activeAudio = audio;
-
       let hasFired = false;
+      // Safety net: if BOTH audio AND speech synthesis fail silently (e.g. mobile
+      // autoplay block with no error event), force the conversation to continue after 12s.
+      const safetyTimer = setTimeout(() => {
+        console.warn('[TTS] Safety timeout triggered — forcing continuation');
+        handleCompletion();
+      }, 12000);
+
       function handleCompletion() {
         if (!hasFired) {
           hasFired = true;
+          clearTimeout(safetyTimer);
           activeAudio = null;
           callback();
         }
       }
 
-      audio.onended = handleCompletion;
-      audio.onerror = (e) => {
-        console.warn("[TTS] Server-side audio failed, falling back to browser SpeechSynthesis:", e);
+      function runBrowserFallback() {
         if (hasFired) return;
-        
-        // Fallback to local browser SpeechSynthesis
+        if (!window.speechSynthesis) { handleCompletion(); return; }
+        window.speechSynthesis.cancel();
         activeUtterance = new SpeechSynthesisUtterance(text);
         activeUtterance.lang = activeLocale.synthesis;
-        activeUtterance.onend = () => {
-          activeUtterance = null;
-          handleCompletion();
-        };
-        activeUtterance.onerror = () => {
-          activeUtterance = null;
-          handleCompletion();
-        };
+        activeUtterance.rate = 0.92;
+        activeUtterance.onend = () => { activeUtterance = null; handleCompletion(); };
+        activeUtterance.onerror = () => { activeUtterance = null; handleCompletion(); };
         window.speechSynthesis.speak(activeUtterance);
+      }
+
+      // Try server-side gTTS audio
+      const audioUrl = `/api/tts?text=${encodeURIComponent(text)}&lang=${currentLang}`;
+      const audio = new Audio(audioUrl);
+      activeAudio = audio;
+      audio.onended = handleCompletion;
+      audio.onerror = (e) => {
+        console.warn('[TTS] Audio error, falling back to browser synthesis:', e);
+        runBrowserFallback();
       };
 
+      // CRITICAL: audio.play() returns a Promise. On mobile, autoplay is blocked
+      // and the rejection is SILENT (onerror does NOT fire). Must catch it explicitly.
       try {
-        audio.play();
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+          playPromise.catch((err) => {
+            console.warn('[TTS] play() blocked (autoplay policy), falling back:', err);
+            runBrowserFallback();
+          });
+        }
       } catch (err) {
-        audio.onerror(err);
+        runBrowserFallback();
       }
     }
 
