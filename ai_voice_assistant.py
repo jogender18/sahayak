@@ -182,15 +182,18 @@ def _fallback_nlp(user_message, history, current_state, lang):
     elif any(w in low for w in ['installment', 'kist', 'kist']):
         s['payment_schedule'] = 'installments'
 
-    # Duration
-    dm = re.search(r'(\d+\s*(?:days?|months?|weeks?|din|mahine|hafte))', low)
+    # Duration (supports Hindi & Telugu words too)
+    dm = re.search(r'(\d+\s*(?:days?|months?|weeks?|din|mahine|hafte|rojulu|vaaralu))', low)
     if dm and not s.get('duration'):
         s['duration'] = dm.group(1)
 
-    # Location
-    lm = re.search(r'(?:in|at|near|location|place|jagah)\s+([A-Za-z][A-Za-z\s]{2,25}?)(?:\s+for|\s+from|\.|,|$)', msg, re.IGNORECASE)
-    if lm and not s.get('work_location'):
-        s['work_location'] = lm.group(1).strip()
+    # Start date inference
+    if any(w in low for w in ['today', 'aaj', 'aaj se', 'ee roju', 'ఈ రోజు']):
+        from datetime import date
+        s['start_date'] = date.today().isoformat()
+    elif any(w in low for w in ['tomorrow', 'kal', 'kal se', 'repu', 'రేపు']):
+        from datetime import date, timedelta
+        s['start_date'] = (date.today() + timedelta(days=1)).isoformat()
 
     # Trades - universal map
     trades_map = {
@@ -200,6 +203,7 @@ def _fallback_nlp(user_message, history, current_state, lang):
         'carpenter': 'Carpentry and woodwork',
         'masonry': 'Brick masonry, plastering, and construction work',
         'mason': 'Brick masonry and plastering',
+        'mistri': 'Brick masonry and construction work',
         'plumbing': 'Plumbing and pipe fitting work',
         'plumber': 'Plumbing and pipe repair',
         'painting': 'Wall painting and surface finishing',
@@ -228,16 +232,11 @@ def _fallback_nlp(user_message, history, current_state, lang):
             s['work_description'] = desc
             break
 
-    # If still no description, use full message if it looks descriptive
-    if not s.get('work_description') and len(msg.split()) >= 3 and any(w in low for w in ['work', 'job', 'kaam', 'pani', 'pari']):
-        s['work_description'] = msg
-
     # ── Name extraction heuristics (independent — all run on every message) ──
-
     skip_words = {'Hiring', 'Employing', 'Looking', 'Trying', 'Going', 'Working', 'The', 'A', 'An', 'And', 'I', 'Am'}
 
-    # "my name is X" → owner_name (always checked first)
-    my_name_m = re.search(r'(?:my name is)\s+([A-Z][a-z]+)', msg, re.IGNORECASE)
+    # "my name is X" / "mera naam X" / "naa peru X" → owner_name
+    my_name_m = re.search(r'(?:my name is|mera naam|मेरा नाम|నా పేరు)\s+([A-Z][a-z]+)', msg, re.IGNORECASE)
     if my_name_m and not s.get('owner_name'):
         candidate = my_name_m.group(1).strip().title()
         if candidate not in skip_words:
@@ -250,10 +249,17 @@ def _fallback_nlp(user_message, history, current_state, lang):
         if candidate not in skip_words:
             s['owner_name'] = candidate
 
-    # "I am hiring/employing X" → worker_name
+    # "I am hiring/employing X" / "X ko rakh raha hoon" → worker_name
     i_hiring_m = re.search(r'\b(?:i am|i\'m)\s+(?:hiring|employing)\s+\b([A-Z][a-z]+)\b', msg, re.IGNORECASE)
     if i_hiring_m and not s.get('worker_name'):
         s['worker_name'] = i_hiring_m.group(1).title()
+
+    # Hindi "X ko ... rakh raha" → worker_name
+    hi_worker_m = re.search(r'\b([A-Z][a-z]+)\s+ko\b', msg)
+    if hi_worker_m and not s.get('worker_name'):
+        w_cand = hi_worker_m.group(1).title()
+        if w_cand not in skip_words and w_cand != s.get('owner_name'):
+            s['worker_name'] = w_cand
 
     # "Mohan is hiring Ramesh" → owner=Mohan, worker=Ramesh (third-person)
     third_hiring_m = re.search(r'\b([A-Z][a-z]+)\b\s+(?:is\s+)?(?:hiring|employing)\s+\b([A-Z][a-z]+)\b', msg, re.IGNORECASE)
@@ -275,34 +281,30 @@ def _fallback_nlp(user_message, history, current_state, lang):
     if on_m and not s.get('owner_name'):
         s['owner_name'] = on_m.group(1).strip().title()
 
+
     # ── Active Missing Field Direct-Answer Fallback Heuristic ──
     # If the user gives a short response (1-3 words) and we still haven't filled the
-    # active missing field, assign the response directly to it.
+    # active missing field, logically assign the response directly to it.
     req_fields = ['owner_name', 'worker_name', 'work_description', 'wage_amount']
+    secondary_fields = ['work_location', 'duration']
+    
     prev_missing = [f for f in req_fields if not current_state.get(f)]
     
-    if prev_missing and len(msg.split()) <= 3:
+    if prev_missing and len(msg.split()) <= 4:
         active_field = prev_missing[0]
-        # Only assign if the active field wasn't successfully extracted by standard rules above
         if not s.get(active_field):
             if active_field in ('owner_name', 'worker_name'):
-                # Exclude basic conversational noise
                 noise = {'hello', 'hi', 'yes', 'no', 'okay', 'ok', 'haan', 'हां', 'అవును'}
                 if low not in noise:
                     s[active_field] = msg.strip().title()
             elif active_field == 'work_description':
                 s[active_field] = msg.strip().capitalize()
             elif active_field == 'wage_amount':
-                # If they say "thousand" or "eight hundred", we can clean it up
                 num_only = re.sub(r'\D', '', low)
                 if num_only:
                     s[active_field] = num_only
-                else:
-                    # Let them write custom text or ignore
-                    pass
 
     missing = [f for f in req_fields if not s.get(f)]
-
 
     replies = {
         'owner_name': {

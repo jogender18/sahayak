@@ -276,39 +276,66 @@ def voice_assistant_converse():
 @app.route('/api/tts')
 def api_tts():
     """
-    Generate high-quality open-source TTS audio stream using gTTS.
-    Supports English, Hindi, and Telugu with realistic voice inflections.
+    Generate realistic neural TTS audio stream using open-source Edge-TTS
+    (with natural Indian accents: en-IN-NeerjaNeural, hi-IN-SwaraNeural, te-IN-ShrutiNeural),
+    falling back to gTTS if offline.
     """
     text = request.args.get('text', '').strip()
     lang = request.args.get('lang', 'en')
     if not text:
         return jsonify({'error': 'No text provided'}), 400
 
-    lang_map = {
-        'en': 'en',
-        'hi': 'hi',
-        'te': 'te'
+    voice_map = {
+        'en': 'en-IN-NeerjaNeural',
+        'hi': 'hi-IN-SwaraNeural',
+        'te': 'te-IN-ShrutiNeural'
     }
-    tts_lang = lang_map.get(lang, 'en')
+    voice = voice_map.get(lang, 'en-IN-NeerjaNeural')
 
+    # Primary: Microsoft Edge Neural Voice (Human-like realistic inflection)
+    try:
+        import asyncio
+        import edge_tts
+        import io
+
+        async def _generate():
+            comm = edge_tts.Communicate(text, voice)
+            buf = io.BytesIO()
+            async for chunk in comm.stream():
+                if chunk['type'] == 'audio':
+                    buf.write(chunk['data'])
+            buf.seek(0)
+            return buf
+
+        audio_buf = asyncio.run(_generate())
+        if audio_buf.getbuffer().nbytes > 0:
+            return send_file(
+                audio_buf,
+                mimetype='audio/mp3',
+                as_attachment=False,
+                download_name='speech.mp3'
+            )
+    except Exception as e:
+        print(f"[Edge-TTS Endpoint] Warning: {e}, attempting gTTS fallback...")
+
+    # Secondary: gTTS fallback
     try:
         from gtts import gTTS
         import io
-
+        tts_lang = 'te' if lang == 'te' else ('hi' if lang == 'hi' else 'en')
         tts = gTTS(text=text, lang=tts_lang, slow=False)
         fp = io.BytesIO()
         tts.write_to_fp(fp)
         fp.seek(0)
-
         return send_file(
             fp,
             mimetype='audio/mp3',
             as_attachment=False,
             download_name='speech.mp3'
         )
-    except Exception as e:
-        print(f"[TTS Endpoint] Error: {e}")
-        return jsonify({'error': str(e)}), 500
+    except Exception as err:
+        print(f"[TTS Fallback Error] {err}")
+        return jsonify({'error': str(err)}), 500
 
 
 if __name__ == '__main__':
