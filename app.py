@@ -37,7 +37,8 @@ def get_base_url():
     # 1. Live tunnel / reverse proxy headers (Render, Cloudflare, etc.)
     #    These always match the exact domain used to access the site.
     forwarded_proto = request.headers.get('X-Forwarded-Proto')
-    forwarded_host  = request.headers.get('X-Forwarded-Host')
+    # Render uses 'Host' header instead of 'X-Forwarded-Host' for routing
+    forwarded_host  = request.headers.get('X-Forwarded-Host') or request.headers.get('Host')
     if forwarded_proto and forwarded_host:
         return f"{forwarded_proto}://{forwarded_host}"
 
