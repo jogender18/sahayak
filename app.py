@@ -205,5 +205,15 @@ def api_agreement(agreement_id):
         return jsonify({"error": "Agreement not found"}), 404
     return jsonify(agreement)
 
+@app.route('/api/debug')
+def api_debug():
+    return jsonify({
+        "headers": dict(request.headers),
+        "host_url": request.host_url,
+        "base_url": get_base_url(),
+        "env_public_base_url": os.environ.get("PUBLIC_BASE_URL", "")
+    })
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
