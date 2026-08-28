@@ -71,7 +71,7 @@ def _call_openrouter(user_message, history, state, lang, api_key):
         base_url="https://openrouter.ai/api/v1",
         api_key=api_key
     )
-    model = os.environ.get('OPENROUTER_MODEL', 'meta-llama/llama-3.3-70b-instruct:free')
+    model = os.environ.get('OPENROUTER_MODEL', 'dots-studio/dots-3-note-preview:free')
     messages = [
         {'role': 'system', 'content': SYSTEM_PROMPT},
         {'role': 'system', 'content': f'Target Language: {lang}. Current extracted fields: {json.dumps(state, ensure_ascii=False)}'}
