@@ -285,6 +285,40 @@ def api_tts():
     if not text:
         return jsonify({'error': 'No text provided'}), 400
 
+    # Priority 1: OpenRouter TTS (Fish Audio S2.1 Pro Free or Deepgram Flux TTS)
+    openrouter_key = os.environ.get('OPENROUTER_API_KEY')
+    openrouter_model = os.environ.get('OPENROUTER_TTS_MODEL', 'fish-audio/s2.1-pro-free')
+
+    if openrouter_key:
+        try:
+            import requests
+            import io
+            headers = {
+                "Authorization": f"Bearer {openrouter_key}",
+                "Content-Type": "application/json",
+            }
+            payload = {
+                "model": openrouter_model,
+                "input": text,
+            }
+            resp = requests.post(
+                "https://openrouter.ai/api/v1/audio/speech",
+                headers=headers,
+                json=payload,
+                timeout=12
+            )
+            if resp.status_code == 200 and len(resp.content) > 100:
+                return send_file(
+                    io.BytesIO(resp.content),
+                    mimetype='audio/mp3',
+                    as_attachment=False,
+                    download_name='speech.mp3'
+                )
+            else:
+                print(f"[OpenRouter TTS] Status {resp.status_code}: {resp.text}, trying fallback...")
+        except Exception as e:
+            print(f"[OpenRouter TTS] Warning: {e}, trying fallback...")
+
     voice_map = {
         'en': 'en-IN-NeerjaNeural',
         'hi': 'hi-IN-SwaraNeural',
@@ -292,7 +326,7 @@ def api_tts():
     }
     voice = voice_map.get(lang, 'en-IN-NeerjaNeural')
 
-    # Primary: Microsoft Edge Neural Voice (Human-like realistic inflection)
+    # Priority 2: Microsoft Edge Neural Voice (Human-like realistic inflection)
     try:
         import asyncio
         import edge_tts
