@@ -134,19 +134,37 @@ def generate_agreement_pdf(agreement: dict, verify_url: str) -> io.BytesIO:
     story.append(meta_table)
     story.append(Spacer(1, 10))
 
+    # Safe field extractions with fallbacks
+    start_date_val = str(agreement.get('start_date') or '').strip() or str(agreement.get('created_at', '')).split()[0]
+    owner_name_val = str(agreement.get('owner_name') or 'Owner / Contractor').strip()
+    owner_phone_val = str(agreement.get('owner_phone') or 'Not provided').strip()
+    worker_name_val = str(agreement.get('worker_name') or 'Worker / Laborer').strip()
+    worker_phone_val = str(agreement.get('worker_phone') or 'Not provided').strip()
+    work_desc_val = str(agreement.get('work_description') or 'General labor and trade services').strip()
+    duration_val = str(agreement.get('duration') or 'As mutually agreed / Until completion').strip()
+    location_val = str(agreement.get('work_location') or 'As mutually agreed at worksite').strip()
+    payment_sched_val = str(agreement.get('payment_schedule') or 'weekly').strip().title()
+
+    try:
+        raw_w = str(agreement.get('wage_amount', 0)).replace(',', '').replace('₹', '').replace('Rs.', '').strip()
+        wage_num = float(raw_w) if raw_w else 0.0
+        wage_rate_formatted = f"Rs. {wage_num:,.2f}"
+    except (ValueError, TypeError):
+        wage_rate_formatted = f"Rs. {agreement.get('wage_amount', '0.00')}"
+
     # 2. Background Section (Parties)
     story.append(Paragraph("1. PARTIES & BACKGROUND", sec_heading_style))
     
     bg_p1 = (
-        f"This Wage Agreement is entered into on <b>{agreement['start_date']}</b> between:"
+        f"This Wage Agreement is entered into on <b>{start_date_val}</b> between:"
     )
     story.append(Paragraph(bg_p1, body_style))
     story.append(Spacer(1, 4))
 
     party_box_data = [
         [
-            Paragraph(f"<b>Owner / Contractor:</b> {agreement['owner_name']}<br/><b>Phone:</b> {agreement['owner_phone']} <i>(\"Owner\")</i>", body_style),
-            Paragraph(f"<b>Worker / Laborer:</b> {agreement['worker_name']}<br/><b>Phone:</b> {agreement['worker_phone']} <i>(\"Worker\")</i>", body_style)
+            Paragraph(f"<b>Owner / Contractor:</b> {owner_name_val}<br/><b>Phone:</b> {owner_phone_val} <i>(\"Owner\")</i>", body_style),
+            Paragraph(f"<b>Worker / Laborer:</b> {worker_name_val}<br/><b>Phone:</b> {worker_phone_val} <i>(\"Worker\")</i>", body_style)
         ]
     ]
     party_table = Table(party_box_data, colWidths=[3.6 * inch, 3.6 * inch])
@@ -163,7 +181,7 @@ def generate_agreement_pdf(agreement: dict, verify_url: str) -> io.BytesIO:
 
     # 3. Description of Work
     story.append(Paragraph("2. DESCRIPTION OF WORK", sec_heading_style))
-    work_text = f"The Worker agrees to perform the following work:<br/><b>{agreement['work_description']}</b>"
+    work_text = f"The Worker agrees to perform the following work:<br/><b>{work_desc_val}</b>"
     work_box = Table([[Paragraph(work_text, callout_text)]], colWidths=[7.3 * inch])
     work_box.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#f8fafc')),
@@ -175,10 +193,9 @@ def generate_agreement_pdf(agreement: dict, verify_url: str) -> io.BytesIO:
 
     # 4. Wage and Payment Section
     story.append(Paragraph("3. WAGE AND PAYMENT", sec_heading_style))
-    wage_rate_formatted = f"Rs. {agreement['wage_amount']:,.2f}"
     
     # Handle unit prefix cleanly so we never get "per per day"
-    raw_unit = agreement.get('wage_unit', 'per day').strip()
+    raw_unit = str(agreement.get('wage_unit') or 'per day').strip()
     if raw_unit.lower().startswith('per '):
         unit_display = raw_unit
     else:
@@ -186,7 +203,7 @@ def generate_agreement_pdf(agreement: dict, verify_url: str) -> io.BytesIO:
 
     wage_text = (
         f"• <b>Agreed Wage:</b> Owner agrees to pay Worker <b>{wage_rate_formatted}</b> {unit_display}.<br/>"
-        f"• <b>Payment Schedule:</b> Payment will be made on the following schedule: <b>{agreement['payment_schedule'].title()}</b>."
+        f"• <b>Payment Schedule:</b> Payment will be made on the following schedule: <b>{payment_sched_val}</b>."
     )
     wage_box = Table([[Paragraph(wage_text, callout_text)]], colWidths=[7.3 * inch])
     wage_box.setStyle(TableStyle([
@@ -199,7 +216,7 @@ def generate_agreement_pdf(agreement: dict, verify_url: str) -> io.BytesIO:
 
     # 5. Penalty Clause (clearly highlighted)
     story.append(Paragraph("4. PENALTY FOR LATE PAYMENT", sec_heading_style))
-    penalty_val = agreement.get('late_penalty', '').strip() or "Standard mutual dispute resolution / No additional penalty specified"
+    penalty_val = str(agreement.get('late_penalty') or '').strip() or "Standard mutual dispute resolution / No additional penalty specified"
     penalty_content = (
         f"If payment is delayed beyond the agreed schedule, the following penalty applies:<br/>"
         f"<b>{penalty_val}</b>"
@@ -216,8 +233,8 @@ def generate_agreement_pdf(agreement: dict, verify_url: str) -> io.BytesIO:
     # 6. Work Duration & Location
     story.append(Paragraph("5. WORK DURATION & LOCATION", sec_heading_style))
     duration_text = (
-        f"• <b>Schedule:</b> Work under this Agreement shall begin on <b>{agreement['start_date']}</b> and continue for <b>{agreement['duration']}</b>.<br/>"
-        f"• <b>Location:</b> <b>{agreement['work_location']}</b>."
+        f"• <b>Schedule:</b> Work under this Agreement shall begin on <b>{start_date_val}</b> and continue for <b>{duration_val}</b>.<br/>"
+        f"• <b>Location:</b> <b>{location_val}</b>."
     )
     duration_box = Table([[Paragraph(duration_text, callout_text)]], colWidths=[7.3 * inch])
     duration_box.setStyle(TableStyle([

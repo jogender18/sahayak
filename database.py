@@ -59,11 +59,27 @@ def _get_conn():
     return _get_sqlite_conn()
 
 def _row_to_dict(row, cursor=None):
-    """Convert a DB row to a plain dict regardless of backend."""
+    """Convert a DB row to a plain dict regardless of backend and guarantee safe types."""
+    if row is None:
+        return None
     if USE_POSTGRES:
         cols = [d[0] for d in cursor.description]
-        return dict(zip(cols, row))
-    return dict(row)
+        d = dict(zip(cols, row))
+    else:
+        d = dict(row)
+    
+    # Guarantee float wage_amount so templates and PDF generator never crash
+    try:
+        raw_w = str(d.get("wage_amount", 0)).replace(",", "").replace("₹", "").replace("Rs.", "").strip()
+        d["wage_amount"] = float(raw_w) if raw_w else 0.0
+    except (ValueError, TypeError):
+        d["wage_amount"] = 0.0
+
+    # Ensure all string fields are at least non-empty safe strings
+    for k in ["owner_name", "worker_name", "work_description", "work_location", "duration", "start_date", "payment_schedule", "wage_unit", "owner_phone", "worker_phone", "late_penalty"]:
+        if d.get(k) is None:
+            d[k] = ""
+    return d
 
 # ── Public API ────────────────────────────────────────────────────────────────
 
@@ -78,29 +94,42 @@ def init_db():
 
 
 def create_agreement(data: dict) -> str:
-    """Insert a new agreement and return its UUID."""
+    """Insert a new agreement and return its UUID with robust sanitization."""
+    import re
     agreement_id = str(uuid.uuid4())
     created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    # Safe wage parsing from any string/float format (e.g. '1,200', '₹950.00', '1000 per day')
+    raw_wage = str(data.get("wage_amount", 0)).replace(",", "").replace("₹", "").replace("Rs.", "").strip()
+    wage_match = re.search(r'(\d+(?:\.\d+)?)', raw_wage)
+    wage_amount = float(wage_match.group(1)) if wage_match else 0.0
 
     late_penalty = (
         data.get("late_penalty", "").strip()
         or "Standard mutual dispute resolution / No additional penalty specified"
     )
+    start_date = data.get("start_date", "").strip() or datetime.now().strftime("%Y-%m-%d")
+    duration = data.get("duration", "").strip() or "As mutually agreed / Until completion"
+    work_location = data.get("work_location", "").strip() or "As mutually agreed at worksite"
+    owner_phone = data.get("owner_phone", "").strip() or "Not provided"
+    worker_phone = data.get("worker_phone", "").strip() or "Not provided"
+    wage_unit = data.get("wage_unit", "per day").strip() or "per day"
+    payment_schedule = data.get("payment_schedule", "weekly").strip() or "weekly"
 
     values = (
         agreement_id,
         data.get("owner_name", "").strip(),
-        data.get("owner_phone", "").strip(),
+        owner_phone,
         data.get("worker_name", "").strip(),
-        data.get("worker_phone", "").strip(),
+        worker_phone,
         data.get("work_description", "").strip(),
-        float(data.get("wage_amount", 0)),
-        data.get("wage_unit", "per day").strip(),
-        data.get("payment_schedule", "weekly").strip(),
+        wage_amount,
+        wage_unit,
+        payment_schedule,
         late_penalty,
-        data.get("start_date", "").strip(),
-        data.get("duration", "").strip(),
-        data.get("work_location", "").strip(),
+        start_date,
+        duration,
+        work_location,
         created_at,
         "VERIFIED",
     )

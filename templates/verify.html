@@ -54,13 +54,13 @@
   <div class="detail-grid">
     <div class="detail-card highlight">
       <div class="detail-label">{{ t.lbl_agreed_wage }}</div>
-      <div class="detail-value wage">₹ {{ "{:,.2f}".format(agreement.wage_amount) }}</div>
-      <div style="font-size: 15px; font-weight: 700; color: #065f46;">{{ t.lbl_rate_unit }}: {{ agreement.wage_unit }}</div>
+      <div class="detail-value wage">₹ {{ "{:,.2f}".format(agreement.wage_amount) if agreement.wage_amount is number else agreement.wage_amount }}</div>
+      <div style="font-size: 15px; font-weight: 700; color: #065f46;">{{ t.lbl_rate_unit }}: {{ agreement.wage_unit or 'per day' }}</div>
     </div>
 
     <div class="detail-card">
       <div class="detail-label">{{ t.lbl_payment_sched }}</div>
-      <div class="detail-value">{{ agreement.payment_schedule | title }}</div>
+      <div class="detail-value">{{ (agreement.payment_schedule or 'weekly') | title }}</div>
     </div>
 
     <div class="detail-card">

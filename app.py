@@ -153,11 +153,17 @@ def view_agreement(agreement_id):
     verify_url = f"{get_base_url()}/verify/{agreement_id}?lang={lang}"
     qr_data_uri = make_qr_data_uri(verify_url)
     
+    try:
+        raw_w = str(agreement.get('wage_amount', 0)).replace(',', '').replace('₹', '').replace('Rs.', '').strip()
+        wage_fmt = f"{float(raw_w):,.2f}"
+    except (ValueError, TypeError):
+        wage_fmt = str(agreement.get('wage_amount', '0.00'))
+
     share_text = (
         f"🤝 {t['app_title']}\n"
-        f"{t['role_employer']}: {agreement['owner_name']}\n"
-        f"{t['role_worker']}: {agreement['worker_name']}\n"
-        f"{t['lbl_agreed_wage']}: Rs. {agreement['wage_amount']:,.2f} ({agreement['wage_unit']})\n"
+        f"{t['role_employer']}: {agreement.get('owner_name', '')}\n"
+        f"{t['role_worker']}: {agreement.get('worker_name', '')}\n"
+        f"{t['lbl_agreed_wage']}: Rs. {wage_fmt} ({agreement.get('wage_unit', 'per day')})\n"
         f"Online Verification: {verify_url}"
     )
 
@@ -185,6 +191,7 @@ def verify_agreement(agreement_id):
     return resp
 
 @app.route('/pdf/<agreement_id>')
+@app.route('/download/<agreement_id>')
 def download_pdf(agreement_id):
     agreement = get_agreement(agreement_id)
     if not agreement:
