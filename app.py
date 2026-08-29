@@ -130,13 +130,15 @@ def create():
     
     if not (data["owner_name"] and data["worker_name"] and data["work_description"] and data["wage_amount"]):
         lang = get_current_lang()
+        t = get_text(lang)
         recent = list_recent_agreements(limit=5)
         return render_template(
             'index.html',
             recent=recent,
-            form_error="Please fill in all required fields: Owner Name, Worker Name, Description of Work, and Wage Amount.",
+            form_error=t.get("form_error_required", "Please fill in all required fields: Owner Name, Worker Name, Description of Work, and Wage Amount."),
             form_data=data
         ), 400
+
 
     agreement_id = create_agreement(data)
     lang = get_current_lang()

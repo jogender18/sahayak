@@ -83,6 +83,7 @@ TRANSLATIONS = {
         "late_penalty_ph": "e.g. Rs. 150 per day late compensation or 2% weekly interest.",
         "late_penalty_hint": "Specify agreed consequences if wages are delayed past scheduled date.",
 
+        "form_error_required": "Please fill in all required fields: Owner Name, Worker Name, Description of Work, and Wage Amount.",
         "btn_generate": "📄 Review & Generate Agreement (PDF & QR)",
         "btn_generating_sub": "🔒 Opens agreement review & read-aloud summary before finalizing PDF.",
 
@@ -216,6 +217,7 @@ TRANSLATIONS = {
         "late_penalty_ph": "उदा. तय तारीख के बाद ₹150 प्रतिदिन हर्जाना।",
         "late_penalty_hint": "भुगतान में देरी होने पर तय की गई शर्त लिखें।",
 
+        "form_error_required": "कृपया सभी आवश्यक फ़ील्ड भरें: मालिक का नाम, श्रमिक का नाम, काम का विवरण और मजदूरी राशि।",
         "btn_generate": "📄 अनुबंध की समीक्षा और निर्माण (PDF & QR)",
         "btn_generating_sub": "🔒 PDF अंतिम रूप देने से पहले अनुबंध का सारांश और बोलकर सुनाने की सुविधा।",
 
@@ -349,6 +351,7 @@ TRANSLATIONS = {
         "late_penalty_ph": "ఉదా. గడువు దాటిన తర్వాత రోజుకు ₹150 ఆలస్య పరిహారం.",
         "late_penalty_hint": "చెల్లింపు ఆలస్యమైతే ఒప్పందం చేసుకున్న పరిహార నిబంధన రాయండి.",
 
+        "form_error_required": "దయచేసి అవసరమైన అన్ని వివరాలను పూరించండి: యజమాని పేరు, కార్మికుడి పేరు, పని వివరాలు మరియు వేతనం మొత్తం.",
         "btn_generate": "📄 ఒప్పందాన్ని సమీక్షించి రూపొందించండి (PDF & QR)",
         "btn_generating_sub": "🔒 అధికారిక పత్రాన్ని రూపొందించే ముందు సారాంశం మరియు వినే సదుపాయం.",
 
